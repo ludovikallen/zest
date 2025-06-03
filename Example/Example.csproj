@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+    <UsingTask
+            TaskName="Metro.TypeScriptClientGenerator"
+            AssemblyFile="C:\Users\ludovik.allen\Documents\git\Metro\Metro\bin\Debug\net9.0\Metro.dll" />
+
+    <UsingTask
+            TaskName="Metro.OpenApiDocumentGenerator"
+            AssemblyFile="C:\Users\ludovik.allen\Documents\git\Metro\Metro\bin\Debug\net9.0\Metro.dll" />
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Metro\Metro.csproj" />
+    </ItemGroup>
+
+    <Target Name="generateOpenApi" AfterTargets="Build">
+        <OpenApiDocumentGenerator BuildPath="C:\Users\ludovik.allen\Documents\git\Metro\Example" AssemblyName="Example"></OpenApiDocumentGenerator>
+    </Target>
+
+    <Target Name="forceOpenApiReGenerationOnRebuild" AfterTargets="CoreClean">
+        <Delete Files="C:\Users\ludovik.allen\Documents\git\Metro\Example\swagger.json"></Delete>
+    </Target>
+
+    <Target Name="generateTypeScriptClient" AfterTargets="generateOpenApi">
+        <TypeScriptClientGenerator BuildPath="C:\Users\ludovik.allen\Documents\git\Metro\Example"></TypeScriptClientGenerator>
+    </Target>
+
+    <Target Name="forceReGenerationOnRebuild" AfterTargets="CoreClean">
+        <Delete Files="C:\Users\ludovik.allen\Documents\git\Metro\Example\frontend\src\generated\generated.ts"></Delete>
+    </Target>
+
+</Project>

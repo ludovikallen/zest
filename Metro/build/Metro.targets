@@ -1,0 +1,28 @@
+<Project>
+    <!-- Define the MSBuild task from the Metro.dll located in the tools directory -->
+    <UsingTask
+        TaskName="Metro.TypeScriptClientGenerator"
+        AssemblyFile="$(_MetroToolsDir)\Metro.dll" />
+
+    <Target Name="GenerateTypeScriptClient"
+            AfterTargets="Build"
+            Condition=" '$(GenerateTypeScriptClientOnBuild)' != 'false' AND Exists('$(_MetroOrvalConfigPath)') ">
+        <Message Text="Metro: Generating TypeScript client..." Importance="high" />
+        <Message Text="Metro: MSBuildThisFileDirectory (location of this .targets file): $(MSBuildThisFileDirectory)" Importance="normal" />
+        <Message Text="Metro: _MetroToolsDir (resolved tools path): $(_MetroToolsDir)" Importance="normal" />
+        <Message Text="Metro: Orval config path being used: $(_MetroOrvalConfigPath)" Importance="normal" />
+        <Message Text="Metro: Project directory for generation (BuildPath): $(MSBuildProjectDirectory)" Importance="normal" />
+
+        <Metro.TypeScriptClientGenerator
+            BuildPath="$(MSBuildProjectDirectory)"
+            OrvalConfigPath="$(_MetroOrvalConfigPath)" />
+    </Target>
+
+    <Target Name="ForceReGenerationOnRebuild"
+            AfterTargets="CoreClean"
+            Condition=" '$(ForceReGenerationOnRebuild)' != 'false' ">
+        <Message Text="Metro: Cleaning previously generated TypeScript client..." Importance="high" />
+        <!-- This path is relative to the consuming project (e.g., Example.csproj) -->
+        <Delete Files="$(MSBuildProjectDirectory)\frontend\src\generated\generated.ts" Condition="Exists('$(MSBuildProjectDirectory)\frontend\src\generated\generated.ts')" />
+    </Target>
+</Project>

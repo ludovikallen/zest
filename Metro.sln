@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metro", "Metro\Metro.csproj", "{92022B79-C62E-4320-AF1E-53487CA64E20}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example", "Example\Example.csproj", "{51350BF8-5BF3-4FE5-9718-C8FCA3447C89}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{92022B79-C62E-4320-AF1E-53487CA64E20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92022B79-C62E-4320-AF1E-53487CA64E20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92022B79-C62E-4320-AF1E-53487CA64E20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92022B79-C62E-4320-AF1E-53487CA64E20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51350BF8-5BF3-4FE5-9718-C8FCA3447C89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51350BF8-5BF3-4FE5-9718-C8FCA3447C89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51350BF8-5BF3-4FE5-9718-C8FCA3447C89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51350BF8-5BF3-4FE5-9718-C8FCA3447C89}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
