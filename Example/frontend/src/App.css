@@ -3,6 +3,7 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  color: #333333; /* Adding text color */
 }
 
 .logo {
@@ -39,4 +40,29 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.app-container {
+  color: #333333;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #333333;
+}
+
+p, span, div {
+  color: #333333;
+}
+
+.weather-container {
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  color: #333333;
+}
+
+table {
+  color: #333333;
 }

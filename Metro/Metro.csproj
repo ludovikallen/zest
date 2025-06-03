@@ -18,13 +18,19 @@
             <Pack>true</Pack>
             <PackagePath>tools</PackagePath>
         </Content>
-        
+
         <Content Include="TypeScriptRuntimeConfig.ts">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
             <PackagePath>copied</PackagePath>
         </Content>
-        
+
+        <Content Include="AuthContext.tsx">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Pack>true</Pack>
+            <PackagePath>copied</PackagePath>
+        </Content>
+
         <Content Include="dotnet-swagger*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
@@ -41,6 +47,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.5" />
         <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.14.8" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.2" />
         <PackageReference Include="Tenekon.MSBuild.Packaging.ProjectBuildInPackage" Version="2.0.0">
@@ -52,6 +59,5 @@
     <ItemGroup>
       <ProjectReference Include="..\MetroGenerator\MetroGenerator.csproj" PrivateAssets="all" />
     </ItemGroup>
-    
-</Project>
 
+</Project>

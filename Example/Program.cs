@@ -1,4 +1,5 @@
 using Metro;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddSimpleEmailPasswordCookieAuth(options => options.UseInMemoryDatabase("Example"));
 
 builder.Services.AddTypeScriptClientGenerator();
 
@@ -19,13 +21,16 @@ if (app.Environment.IsDevelopment())
         corsBuilder =>
         {
             corsBuilder
-                .AllowAnyOrigin()
+                .WithOrigins("http://localhost:5173")
+                .AllowCredentials()
                 .AllowAnyMethod()
                 .AllowAnyHeader();
         });
 
     app.UseTypeScriptClientGenerator();
 }
+
+app.UseSimpleEmailPasswordCookieAuth();
 
 app.UseHttpsRedirection();
 
