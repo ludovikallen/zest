@@ -13,39 +13,19 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="*.js">
+        <Content Include="CustomMutator.ts">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
             <PackagePath>tools</PackagePath>
         </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Include="*.ts">
+        
+        <Content Include="orval*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
             <PackagePath>tools</PackagePath>
         </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Include="*.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Pack>true</Pack>
-            <PackagePath>tools</PackagePath>
-        </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Include="C:\Users\ludovik.allen\.nuget\packages\swashbuckle.aspnetcore.cli\8.1.2\tools\net8.0\any\dotnet-swagger.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Pack>true</Pack>
-            <PackagePath>tools</PackagePath>
-        </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Include="C:\Users\ludovik.allen\.nuget\packages\swashbuckle.aspnetcore.cli\8.1.2\tools\net8.0\any\dotnet-swagger.runtimeconfig.json">
+        
+        <Content Include="dotnet-swagger*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
             <PackagePath>tools</PackagePath>

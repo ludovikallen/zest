@@ -17,11 +17,11 @@ public class TypeScriptClientGenerator : ToolTask
 
     protected override string GenerateCommandLineCommands()
     {
-        var orvalConfigPath = Path.Combine(
+        var nugetPackagePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".nuget", "packages", "metro", "0.0.1", "tools", "orval.config.js");
+            ".nuget", "packages", "metro", "0.0.1", "tools");
 
-        return $"--yes orval --input {BuildPath}\\generated\\swagger.json --output {BuildPath}\\frontend\\src\\generated\\generated.ts --config {orvalConfigPath}";
+        return $"--yes orval --input {BuildPath}\\generated\\swagger.json --output {BuildPath}\\frontend\\src\\generated\\generated.ts --config {nugetPackagePath}\\orval.config.js";
     }
 
     protected override bool ValidateParameters()
