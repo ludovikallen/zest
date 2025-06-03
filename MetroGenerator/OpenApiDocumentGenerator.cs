@@ -9,7 +9,7 @@ public class OpenApiDocumentGenerator : ToolTask
     public string BuildPath { get; set; }
 
     [Required]
-    public string AssemblyName { get; set; }
+    public string AssemblyPath { get; set; }
 
     protected override string ToolName => "OpenApiDocumentGenerator";
 
@@ -24,7 +24,7 @@ public class OpenApiDocumentGenerator : ToolTask
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             ".nuget", "packages", "metro", "0.0.1", "tools");
 
-        return $"{nugetPackagePath}\\dotnet-swagger.dll tofile --output {BuildPath}\\generated\\swagger.json {BuildPath}\\bin\\debug\\net9.0\\{AssemblyName}.dll v1";
+        return $"{nugetPackagePath}\\dotnet-swagger.dll tofile --output {BuildPath}\\generated\\swagger.json {AssemblyPath} v1";
     }
 
     protected override bool ValidateParameters()
@@ -34,13 +34,13 @@ public class OpenApiDocumentGenerator : ToolTask
         if (BuildPath.StartsWith("http:") || BuildPath.StartsWith("https:"))
         {
             valid = false;
-            Log.LogError("URL is not allowed");
+            Log.LogError("URL is not allowed as a build path");
         }
 
-        if (string.IsNullOrEmpty(AssemblyName))
+        if (AssemblyPath.StartsWith("http:") || AssemblyPath.StartsWith("https:"))
         {
             valid = false;
-            Log.LogError("Assembly must not be null or empty");
+            Log.LogError("URL is not allowed as an assembly path");
         }
 
         return valid;

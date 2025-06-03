@@ -1,31 +1,43 @@
 <Project>
 
+    <PropertyGroup>
+        <MetroAssemblyDir Condition="'$(MetroAssemblyDir)' == ''">$(MSBuildThisFileDirectory)..\lib\net9.0</MetroAssemblyDir>
+        <MetroGeneratorAssembly>$(MetroAssemblyDir)\MetroGenerator.dll</MetroGeneratorAssembly>
+        <OpenApiOutputDir Condition="'$(OpenApiOutputDir)' == ''">$(MSBuildProjectDirectory)\generated</OpenApiOutputDir>
+        <OpenApiOutputFile Condition="'$(OpenApiOutputFile)' == ''">$(OpenApiOutputDir)\swagger.json</OpenApiOutputFile>
+        <TypeScriptClientOutputDir Condition="'$(TypeScriptClientOutputDir)' == ''">$(MSBuildProjectDirectory)\frontend\src\generated</TypeScriptClientOutputDir>
+        <TypeScriptClientOutputFile Condition="'$(TypeScriptClientOutputFile)' == ''">$(TypeScriptClientOutputDir)\generated.ts</TypeScriptClientOutputFile>
+    </PropertyGroup>
+
     <UsingTask
             TaskName="MetroGenerator.TypeScriptClientGenerator"
-            AssemblyFile="C:\Users\ludovik.allen\Documents\git\Metro\Metro\bin\Debug\net9.0\MetroGenerator.dll" />
+            AssemblyFile="$(MetroGeneratorAssembly)" />
 
     <UsingTask
             TaskName="MetroGenerator.OpenApiDocumentGenerator"
-            AssemblyFile="C:\Users\ludovik.allen\Documents\git\Metro\Metro\bin\Debug\net9.0\MetroGenerator.dll" />
+            AssemblyFile="$(MetroGeneratorAssembly)" />
 
     <Target Name="generateOpenApi" AfterTargets="Build">
         <Message Text="Metro: Generating OpenApi document..." Importance="high" />
-        <OpenApiDocumentGenerator BuildPath="C:\Users\ludovik.allen\Documents\git\Metro\Example" AssemblyName="Example"></OpenApiDocumentGenerator>
+        <OpenApiDocumentGenerator
+            BuildPath="$(MSBuildProjectDirectory)"
+            AssemblyPath="$(TargetPath)">
+        </OpenApiDocumentGenerator>
     </Target>
 
     <Target Name="forceOpenApiReGenerationOnRebuild" AfterTargets="CoreClean">
         <Message Text="Metro: Cleaning previously generated OpenApi document..." Importance="high" />
-        <Delete Files="C:\Users\ludovik.allen\Documents\git\Metro\Example\generated\swagger.json"></Delete>
+        <Delete Files="$(OpenApiOutputFile)"></Delete>
     </Target>
 
     <Target Name="generateTypeScriptClient" AfterTargets="generateOpenApi">
         <Message Text="Metro: Generating TypeScript client..." Importance="high" />
-        <TypeScriptClientGenerator BuildPath="C:\Users\ludovik.allen\Documents\git\Metro\Example"></TypeScriptClientGenerator>
+        <TypeScriptClientGenerator BuildPath="$(MSBuildProjectDirectory)"></TypeScriptClientGenerator>
     </Target>
 
     <Target Name="forceReGenerationOnRebuild" AfterTargets="CoreClean">
         <Message Text="Metro: Cleaning previously generated TypeScript client..." Importance="high" />
-        <Delete Files="C:\Users\ludovik.allen\Documents\git\Metro\Example\frontend\src\generated\generated.ts"></Delete>
+        <Delete Files="$(TypeScriptClientOutputFile)"></Delete>
     </Target>
 
 </Project>
