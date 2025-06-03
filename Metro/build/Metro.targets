@@ -1,28 +1,31 @@
 <Project>
-    <!-- Define the MSBuild task from the Metro.dll located in the tools directory -->
+
     <UsingTask
-        TaskName="Metro.TypeScriptClientGenerator"
-        AssemblyFile="$(_MetroToolsDir)\Metro.dll" />
+            TaskName="MetroGenerator.TypeScriptClientGenerator"
+            AssemblyFile="C:\Users\ludovik.allen\Documents\git\Metro\Metro\bin\Debug\net9.0\MetroGenerator.dll" />
 
-    <Target Name="GenerateTypeScriptClient"
-            AfterTargets="Build"
-            Condition=" '$(GenerateTypeScriptClientOnBuild)' != 'false' AND Exists('$(_MetroOrvalConfigPath)') ">
+    <UsingTask
+            TaskName="MetroGenerator.OpenApiDocumentGenerator"
+            AssemblyFile="C:\Users\ludovik.allen\Documents\git\Metro\Metro\bin\Debug\net9.0\MetroGenerator.dll" />
+
+    <Target Name="generateOpenApi" AfterTargets="Build">
+        <Message Text="Metro: Generating OpenApi document..." Importance="high" />
+        <OpenApiDocumentGenerator BuildPath="C:\Users\ludovik.allen\Documents\git\Metro\Example" AssemblyName="Example"></OpenApiDocumentGenerator>
+    </Target>
+
+    <Target Name="forceOpenApiReGenerationOnRebuild" AfterTargets="CoreClean">
+        <Message Text="Metro: Cleaning previously generated OpenApi document..." Importance="high" />
+        <Delete Files="C:\Users\ludovik.allen\Documents\git\Metro\Example\generated\swagger.json"></Delete>
+    </Target>
+
+    <Target Name="generateTypeScriptClient" AfterTargets="generateOpenApi">
         <Message Text="Metro: Generating TypeScript client..." Importance="high" />
-        <Message Text="Metro: MSBuildThisFileDirectory (location of this .targets file): $(MSBuildThisFileDirectory)" Importance="normal" />
-        <Message Text="Metro: _MetroToolsDir (resolved tools path): $(_MetroToolsDir)" Importance="normal" />
-        <Message Text="Metro: Orval config path being used: $(_MetroOrvalConfigPath)" Importance="normal" />
-        <Message Text="Metro: Project directory for generation (BuildPath): $(MSBuildProjectDirectory)" Importance="normal" />
-
-        <Metro.TypeScriptClientGenerator
-            BuildPath="$(MSBuildProjectDirectory)"
-            OrvalConfigPath="$(_MetroOrvalConfigPath)" />
+        <TypeScriptClientGenerator BuildPath="C:\Users\ludovik.allen\Documents\git\Metro\Example"></TypeScriptClientGenerator>
     </Target>
 
-    <Target Name="ForceReGenerationOnRebuild"
-            AfterTargets="CoreClean"
-            Condition=" '$(ForceReGenerationOnRebuild)' != 'false' ">
+    <Target Name="forceReGenerationOnRebuild" AfterTargets="CoreClean">
         <Message Text="Metro: Cleaning previously generated TypeScript client..." Importance="high" />
-        <!-- This path is relative to the consuming project (e.g., Example.csproj) -->
-        <Delete Files="$(MSBuildProjectDirectory)\frontend\src\generated\generated.ts" Condition="Exists('$(MSBuildProjectDirectory)\frontend\src\generated\generated.ts')" />
+        <Delete Files="C:\Users\ludovik.allen\Documents\git\Metro\Example\frontend\src\generated\generated.ts"></Delete>
     </Target>
+
 </Project>

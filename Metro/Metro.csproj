@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-            
+
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -62,8 +62,11 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.14.8" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MetroGenerator\MetroGenerator.csproj" PrivateAssets="all" IncludeAssets="all" />
     </ItemGroup>
     
 </Project>

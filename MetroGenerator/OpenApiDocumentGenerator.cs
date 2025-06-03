@@ -1,7 +1,7 @@
 ﻿using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Metro;
+namespace MetroGenerator;
 
 public class OpenApiDocumentGenerator : ToolTask
 {
@@ -20,7 +20,11 @@ public class OpenApiDocumentGenerator : ToolTask
 
     protected override string GenerateCommandLineCommands()
     {
-        return $"{BuildPath}\\bin\\debug\\net9.0\\dotnet-swagger.dll tofile --output {BuildPath}\\generated\\swagger.json {BuildPath}\\bin\\debug\\net9.0\\{AssemblyName}.dll v1";
+        var dotnetSwaggerPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".nuget", "packages", "metro", "0.0.1", "tools", "dotnet-swagger.dll");
+
+        return $"{dotnetSwaggerPath} tofile --output {BuildPath}\\generated\\swagger.json {BuildPath}\\bin\\debug\\net9.0\\{AssemblyName}.dll v1";
     }
 
     protected override bool ValidateParameters()

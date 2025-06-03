@@ -1,7 +1,7 @@
 ﻿using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Metro;
+namespace MetroGenerator;
 
 public class TypeScriptClientGenerator : ToolTask
 {
@@ -17,7 +17,11 @@ public class TypeScriptClientGenerator : ToolTask
 
     protected override string GenerateCommandLineCommands()
     {
-        return $"--yes orval --input {BuildPath}\\generated\\swagger.json --output {BuildPath}\\frontend\\src\\generated\\generated.ts --config {BuildPath}\\bin\\debug\\net9.0\\orval.config.js";
+        var orvalConfigPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".nuget", "packages", "metro", "0.0.1", "tools", "orval.config.js");
+
+        return $"--yes orval --input {BuildPath}\\generated\\swagger.json --output {BuildPath}\\frontend\\src\\generated\\generated.ts --config {orvalConfigPath}";
     }
 
     protected override bool ValidateParameters()
