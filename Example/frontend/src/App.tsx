@@ -2,32 +2,44 @@ import {useEffect, useState} from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import {getWeatherForecast, type WeatherForecast} from "./generated/generated.ts";
+import {type WeatherForecastReadable, WeatherForecastService} from "./generated/client";
 
 function App() {
   const [count, setCount] = useState(0)
-  const [weather, setWeather] = useState<WeatherForecast[]>([]);
+  const [weather, setWeather] = useState<WeatherForecastReadable[]>([]);
 
   useEffect(() => {
-      getWeatherForecast().then(x => {
-        setWeather(x.data);
-      });
+      WeatherForecastService.getWeatherForecast().then(x => {
+          if (x.error) {
+            console.log(x.error);
+          } else if (x.data) {
+            setWeather(x.data);
+          }
+      })
   }, [])
 
   if (weather.length > 0) {
     return (
-        <div>
+        <table>
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Summary</th>
+                <th>Temp (C)</th>
+            </tr>
+            </thead>
+            <tbody>
             {weather.map(x => (
-                <div key={x.date}>
-                    <p>Date: {x.date}</p>
-                    <p>Temperature: {x.temperatureC}</p>
-                    {x.summary && <p>Summary: {x.summary}</p>}
-                </div>
+                <tr key={x.date}>
+                    <td>{x.date}</td>
+                    <td>{x.summary || '-'}</td>
+                    <td>{x.temperatureC}</td>
+                </tr>
             ))}
-        </div>
+            </tbody>
+        </table>
     )
   }
-  console.log(import.meta.env.VITE_API_BASE_URL);
 
   return (
     <>

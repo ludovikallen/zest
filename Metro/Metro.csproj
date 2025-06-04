@@ -13,16 +13,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="CustomMutator.ts">
+        <Content Include="TypeScriptClientGeneratorConfig.ts">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
             <PackagePath>tools</PackagePath>
         </Content>
         
-        <Content Include="orval*">
+        <Content Include="TypeScriptRuntimeConfig.ts">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
-            <PackagePath>tools</PackagePath>
+            <PackagePath>copied</PackagePath>
         </Content>
         
         <Content Include="dotnet-swagger*">

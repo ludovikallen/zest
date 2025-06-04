@@ -10,4 +10,8 @@
       <PackageReference Include="Metro" Version="0.0.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="generated\swagger.json" />
+    </ItemGroup>
+
 </Project>

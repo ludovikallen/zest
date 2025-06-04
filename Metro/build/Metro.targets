@@ -7,7 +7,16 @@
         <OpenApiOutputFile Condition="'$(OpenApiOutputFile)' == ''">$(OpenApiOutputDir)\swagger.json</OpenApiOutputFile>
         <TypeScriptClientOutputDir Condition="'$(TypeScriptClientOutputDir)' == ''">$(MSBuildProjectDirectory)\frontend\src\generated</TypeScriptClientOutputDir>
         <TypeScriptClientOutputFile Condition="'$(TypeScriptClientOutputFile)' == ''">$(TypeScriptClientOutputDir)\generated.ts</TypeScriptClientOutputFile>
+        <TypeScriptRuntimeConfigOutputFile Condition="'$(TypeScriptClientOutputFile)' == ''">$(TypeScriptClientOutputDir)\config\TypeScriptRuntimeConfigOutputFile.ts</TypeScriptRuntimeConfigOutputFile>
     </PropertyGroup>
+
+    <UsingTask
+            TaskName="MetroGenerator.CopyFilesToClient"
+            AssemblyFile="$(MetroGeneratorAssembly)" />
+
+    <UsingTask
+            TaskName="MetroGenerator.CreateGeneratedFolder"
+            AssemblyFile="$(MetroGeneratorAssembly)" />
 
     <UsingTask
             TaskName="MetroGenerator.TypeScriptClientGenerator"
@@ -30,14 +39,21 @@
         <Delete Files="$(OpenApiOutputFile)"></Delete>
     </Target>
 
-    <Target Name="generateTypeScriptClient" AfterTargets="generateOpenApi">
-        <Message Text="Metro: Generating TypeScript client..." Importance="high" />
-        <TypeScriptClientGenerator BuildPath="$(MSBuildProjectDirectory)"></TypeScriptClientGenerator>
+    <Target Name="copyRunTimeConfig" AfterTargets="generateOpenApi">
+        <Message Text="Metro: Copying files to client..." Importance="high" />
+        <CopyFilesToClient
+                BuildPath="$(MSBuildProjectDirectory)">
+        </CopyFilesToClient>
     </Target>
 
-    <Target Name="forceReGenerationOnRebuild" AfterTargets="CoreClean">
-        <Message Text="Metro: Cleaning previously generated TypeScript client..." Importance="high" />
-        <Delete Files="$(TypeScriptClientOutputFile)"></Delete>
+    <Target Name="forceFolderReGenerationOnRebuild" AfterTargets="CoreClean">
+        <Message Text="Metro: Cleaning previously generated folder..." Importance="high" />
+        <Delete Files="$(TypeScriptClientOutputDir)"></Delete>
+    </Target>
+
+    <Target Name="generateTypeScriptClient" AfterTargets="copyRunTimeConfig">
+        <Message Text="Metro: Generating TypeScript client..." Importance="high" />
+        <TypeScriptClientGenerator BuildPath="$(MSBuildProjectDirectory)"></TypeScriptClientGenerator>
     </Target>
 
 </Project>

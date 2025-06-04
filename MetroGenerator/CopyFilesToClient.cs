@@ -3,35 +3,34 @@ using Microsoft.Build.Utilities;
 
 namespace MetroGenerator;
 
-public class TypeScriptClientGenerator : ToolTask
+public class CopyFilesToClient : ToolTask
 {
     [Required]
     public string BuildPath { get; set; }
 
-    protected override string ToolName => "TypeScriptClientGenerator";
+    protected override string ToolName => "CopyFilesToClient";
 
     protected override string GenerateFullPathToTool()
     {
-        return OperatingSystem.IsWindows() ? "npx.cmd" : "npx";
-    }
-
-    protected override string GetWorkingDirectory()
-    {
-        return $"{BuildPath}\\frontend\\src\\generated";
+        return OperatingSystem.IsWindows() ? "xcopy" : "cp";
     }
 
     protected override string GenerateCommandLineCommands()
     {
         var nugetPackagePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".nuget", "packages", "metro", "0.0.1", "tools");
+            ".nuget", "packages", "metro", "0.0.1", "copied");
 
-        return $"--yes @hey-api/openapi-ts --file {nugetPackagePath}\\TypeScriptClientGeneratorConfig.ts --input {BuildPath}\\generated\\swagger.json --output {BuildPath}\\frontend\\src\\generated\\client";
+        if (OperatingSystem.IsWindows())
+        {
+            return $"/y /i {nugetPackagePath} {BuildPath}\\frontend\\src\\generated\\config";
+        }
+
+        return $"{nugetPackagePath} {BuildPath}\\frontend\\src\\generated\\config";
     }
 
     protected override bool ValidateParameters()
     {
-        //http address is not allowed
         var valid = true;
         if (BuildPath.StartsWith("http:") || BuildPath.StartsWith("https:"))
         {
