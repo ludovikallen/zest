@@ -4,15 +4,12 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <FrontendSourcePath>$(MSBuildProjectDirectory)\frontend\src</FrontendSourcePath>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Metro" Version="0.0.1" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.5" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <_ContentIncludedByDefault Remove="generated\swagger.json" />
     </ItemGroup>
 
 </Project>

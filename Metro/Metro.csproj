@@ -39,7 +39,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="build\Metro.targets">
+        <Content Include="build\Metro.*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
             <PackagePath>build</PackagePath>
@@ -55,7 +55,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
-
+    
     <ItemGroup>
       <ProjectReference Include="..\MetroGenerator\MetroGenerator.csproj" PrivateAssets="all" />
     </ItemGroup>

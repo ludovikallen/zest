@@ -6,7 +6,14 @@ namespace MetroGenerator;
 public class TypeScriptClientGenerator : ToolTask
 {
     [Required]
-    public string BuildPath { get; set; }
+    public string TypeScriptClientOutputDirectory { get; set; }
+
+    [Required]
+    public string OpenApiFilePath { get; set; }
+
+    [Required]
+    public string NugetPath { get; set; }
+
 
     protected override string ToolName => "TypeScriptClientGenerator";
 
@@ -17,26 +24,39 @@ public class TypeScriptClientGenerator : ToolTask
 
     protected override string GetWorkingDirectory()
     {
-        return $"{BuildPath}\\frontend\\src\\generated";
+        return TypeScriptClientOutputDirectory;
     }
 
     protected override string GenerateCommandLineCommands()
     {
-        var nugetPackagePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".nuget", "packages", "metro", "0.0.1", "tools");
-
-        return $"--yes @hey-api/openapi-ts --file {nugetPackagePath}\\TypeScriptClientGeneratorConfig.ts --input {BuildPath}\\generated\\swagger.json --output {BuildPath}\\frontend\\src\\generated\\client";
+        return $"--yes @hey-api/openapi-ts --file {NugetPath}\\tools\\TypeScriptClientGeneratorConfig.ts --input {OpenApiFilePath} --output {TypeScriptClientOutputDirectory}\\client";
     }
 
     protected override bool ValidateParameters()
     {
-        //http address is not allowed
         var valid = true;
-        if (BuildPath.StartsWith("http:") || BuildPath.StartsWith("https:"))
+        if (!Path.IsPathFullyQualified(TypeScriptClientOutputDirectory))
         {
             valid = false;
-            Log.LogError("URL is not allowed");
+            Log.LogError(
+                "The TypeScript client output directory path must be a fully qualified path. Please provide a fully qualified path instead of: {0}",
+                TypeScriptClientOutputDirectory);
+        }
+
+        if (!Path.IsPathFullyQualified(OpenApiFilePath))
+        {
+            valid = false;
+            Log.LogError(
+                "The open api file path must be a fully qualified path. Please provide a fully qualified path instead of: {0}",
+                OpenApiFilePath);
+        }
+
+        if (!Path.Exists(NugetPath))
+        {
+            valid = false;
+            Log.LogError(
+                "The nuget path must exist. Please verify the path: {0}",
+                NugetPath);
         }
 
         return valid;

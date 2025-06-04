@@ -6,7 +6,10 @@ namespace MetroGenerator;
 public class CopyFilesToClient : ToolTask
 {
     [Required]
-    public string BuildPath { get; set; }
+    public string TypeScriptClientOutputDirectory { get; set; }
+
+    [Required]
+    public string NugetPath { get; set; }
 
     protected override string ToolName => "CopyFilesToClient";
 
@@ -17,25 +20,31 @@ public class CopyFilesToClient : ToolTask
 
     protected override string GenerateCommandLineCommands()
     {
-        var nugetPackagePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".nuget", "packages", "metro", "0.0.1", "copied");
-
         if (OperatingSystem.IsWindows())
         {
-            return $"/y /i {nugetPackagePath} {BuildPath}\\frontend\\src\\generated\\config";
+            return $"/y /i {NugetPath}\\copied {TypeScriptClientOutputDirectory}\\config";
         }
 
-        return $"{nugetPackagePath} {BuildPath}\\frontend\\src\\generated\\config";
+        return $"{NugetPath}\\copied {TypeScriptClientOutputDirectory}\\config";
     }
 
     protected override bool ValidateParameters()
     {
         var valid = true;
-        if (BuildPath.StartsWith("http:") || BuildPath.StartsWith("https:"))
+        if (!Path.IsPathFullyQualified(TypeScriptClientOutputDirectory))
         {
             valid = false;
-            Log.LogError("URL is not allowed");
+            Log.LogError(
+                "The TypeScript client output directory path must be a fully qualified path. Please provide a fully qualified path instead of: {0}",
+                TypeScriptClientOutputDirectory);
+        }
+
+        if (!Path.Exists(NugetPath))
+        {
+            valid = false;
+            Log.LogError(
+                "The nuget path must exist. Please verify the path: {0}",
+                NugetPath);
         }
 
         return valid;

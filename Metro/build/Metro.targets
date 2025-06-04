@@ -1,13 +1,10 @@
 <Project>
 
     <PropertyGroup>
-        <MetroAssemblyDir Condition="'$(MetroAssemblyDir)' == ''">$(MSBuildThisFileDirectory)..\lib\net9.0</MetroAssemblyDir>
-        <MetroGeneratorAssembly>$(MetroAssemblyDir)\MetroGenerator.dll</MetroGeneratorAssembly>
-        <OpenApiOutputDir Condition="'$(OpenApiOutputDir)' == ''">$(MSBuildProjectDirectory)\generated</OpenApiOutputDir>
-        <OpenApiOutputFile Condition="'$(OpenApiOutputFile)' == ''">$(OpenApiOutputDir)\swagger.json</OpenApiOutputFile>
-        <TypeScriptClientOutputDir Condition="'$(TypeScriptClientOutputDir)' == ''">$(MSBuildProjectDirectory)\frontend\src\generated</TypeScriptClientOutputDir>
-        <TypeScriptClientOutputFile Condition="'$(TypeScriptClientOutputFile)' == ''">$(TypeScriptClientOutputDir)\generated.ts</TypeScriptClientOutputFile>
-        <TypeScriptRuntimeConfigOutputFile Condition="'$(TypeScriptClientOutputFile)' == ''">$(TypeScriptClientOutputDir)\config\TypeScriptRuntimeConfigOutputFile.ts</TypeScriptRuntimeConfigOutputFile>
+        <MetroNugetDirectory>$(MSBuildThisFileDirectory)..</MetroNugetDirectory>
+        <MetroGeneratorAssembly>$(MetroNugetDirectory)\lib\net9.0\MetroGenerator.dll</MetroGeneratorAssembly>
+        <OpenApiOutputFile>$(MSBuildProjectDirectory)\generated\swagger.json</OpenApiOutputFile>
+        <TypeScriptClientOutputDirectory>$(FrontendSourcePath)\generated</TypeScriptClientOutputDirectory>
     </PropertyGroup>
 
     <UsingTask
@@ -26,34 +23,45 @@
             TaskName="MetroGenerator.OpenApiDocumentGenerator"
             AssemblyFile="$(MetroGeneratorAssembly)" />
 
-    <Target Name="generateOpenApi" AfterTargets="Build">
-        <Message Text="Metro: Generating OpenApi document..." Importance="high" />
-        <OpenApiDocumentGenerator
-            BuildPath="$(MSBuildProjectDirectory)"
-            AssemblyPath="$(TargetPath)">
-        </OpenApiDocumentGenerator>
+    <Target Name="validateFrontendSourcePath" AfterTargets="Build">
+        <Error Condition="'$(FrontendSourcePath)' == ''"
+               Text="Metro: Error - FrontendSourcePath is not set. Please define the FrontendSourcePath property in your project file." />
     </Target>
 
-    <Target Name="forceOpenApiReGenerationOnRebuild" AfterTargets="CoreClean">
+    <Target Name="generateOpenApi" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="validateFrontendSourcePath">
+        <Message Text="Metro: Generating OpenApi document..." Importance="high" />
+        <OpenApiDocumentGenerator
+                BuildPath="$(MSBuildProjectDirectory)"
+                AssemblyPath="$(TargetPath)"
+                NugetPath="$(MetroNugetDirectory)"
+        />
+    </Target>
+
+    <Target Name="copyRunTimeConfig" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="generateOpenApi">
+        <Message Text="Metro: Copying files to client..." Importance="high" />
+        <CopyFilesToClient
+                TypeScriptClientOutputDirectory="$(TypeScriptClientOutputDirectory)"
+                NugetPath="$(MetroNugetDirectory)"
+        />
+    </Target>
+
+    <Target Name="generateTypeScriptClient" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="copyRunTimeConfig">
+        <Message Text="Metro: Generating TypeScript client..." Importance="high" />
+        <TypeScriptClientGenerator
+                TypeScriptClientOutputDirectory="$(TypeScriptClientOutputDirectory)"
+                OpenApiFilePath="$(OpenApiOutputFile)"
+                NugetPath="$(MetroNugetDirectory)"
+        />
+    </Target>
+
+    <Target Name="forceOpenApiReGenerationOnRebuild" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="CoreClean">
         <Message Text="Metro: Cleaning previously generated OpenApi document..." Importance="high" />
         <Delete Files="$(OpenApiOutputFile)"></Delete>
     </Target>
 
-    <Target Name="copyRunTimeConfig" AfterTargets="generateOpenApi">
-        <Message Text="Metro: Copying files to client..." Importance="high" />
-        <CopyFilesToClient
-                BuildPath="$(MSBuildProjectDirectory)">
-        </CopyFilesToClient>
-    </Target>
-
-    <Target Name="forceFolderReGenerationOnRebuild" AfterTargets="CoreClean">
+    <Target Name="forceFolderReGenerationOnRebuild" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="CoreClean">
         <Message Text="Metro: Cleaning previously generated folder..." Importance="high" />
-        <Delete Files="$(TypeScriptClientOutputDir)"></Delete>
-    </Target>
-
-    <Target Name="generateTypeScriptClient" AfterTargets="copyRunTimeConfig">
-        <Message Text="Metro: Generating TypeScript client..." Importance="high" />
-        <TypeScriptClientGenerator BuildPath="$(MSBuildProjectDirectory)"></TypeScriptClientGenerator>
+        <Delete Files="$(TypeScriptClientOutputDirectory)\*"></Delete>
     </Target>
 
 </Project>

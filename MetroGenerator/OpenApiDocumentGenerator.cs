@@ -11,6 +11,9 @@ public class OpenApiDocumentGenerator : ToolTask
     [Required]
     public string AssemblyPath { get; set; }
 
+    [Required]
+    public string NugetPath { get; set; }
+
     protected override string ToolName => "OpenApiDocumentGenerator";
 
     protected override string GenerateFullPathToTool()
@@ -20,27 +23,36 @@ public class OpenApiDocumentGenerator : ToolTask
 
     protected override string GenerateCommandLineCommands()
     {
-        var nugetPackagePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".nuget", "packages", "metro", "0.0.1", "tools");
-
-        return $"{nugetPackagePath}\\dotnet-swagger.dll tofile --output {BuildPath}\\generated\\swagger.json {AssemblyPath} v1";
+        return $"{NugetPath}\\tools\\dotnet-swagger.dll tofile --output {BuildPath}\\generated\\swagger.json {AssemblyPath} v1";
     }
 
     protected override bool ValidateParameters()
     {
         //http address is not allowed
         var valid = true;
-        if (BuildPath.StartsWith("http:") || BuildPath.StartsWith("https:"))
+        if (!Path.Exists(BuildPath))
         {
             valid = false;
-            Log.LogError("URL is not allowed as a build path");
+            Log.LogError(
+                "The build path must exist. Please verify the path: {0}",
+                BuildPath);
         }
 
-        if (AssemblyPath.StartsWith("http:") || AssemblyPath.StartsWith("https:"))
+        if (!Path.Exists(AssemblyPath))
         {
             valid = false;
-            Log.LogError("URL is not allowed as an assembly path");
+            Log.LogError(
+                "The assembly path must exist. Please verify the path: {0}",
+                AssemblyPath);
+        }
+
+
+        if (!Path.Exists(NugetPath))
+        {
+            valid = false;
+            Log.LogError(
+                "The nuget path must exist. Please verify the path: {0}",
+                NugetPath);
         }
 
         return valid;
