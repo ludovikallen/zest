@@ -1,15 +1,18 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace Zest;
 
 public static class TypeScriptClientGeneratorService
 {
-    public static IServiceCollection AddTypeScriptClientGenerator(this IServiceCollection services)
+    public static IServiceCollection AddZest(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options => options.OperationFilter<AuthResponsesOperationFilter>());
@@ -17,7 +20,7 @@ public static class TypeScriptClientGeneratorService
         return services;
     }
 
-    public static IServiceCollection AddSimpleEmailPasswordCookieAuth(this IServiceCollection services, Action<DbContextOptionsBuilder> options)
+    public static IServiceCollection AddZestAuth(this IServiceCollection services, Action<DbContextOptionsBuilder> options)
     {
         services.AddAuthorization();
         services.AddIdentityApiEndpoints<IdentityUser>().AddEntityFrameworkStores<ApplicationDbContext>();
@@ -26,15 +29,37 @@ public static class TypeScriptClientGeneratorService
         return services;
     }
 
-    public static WebApplication UseTypeScriptClientGenerator(this WebApplication app)
+    public static WebApplication UseZest(this WebApplication app)
     {
-        app.UseSwagger();
-        app.UseSwaggerUI();
+        if (app.Environment.IsDevelopment()) {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
+        if (Assembly.GetEntryAssembly()?.GetName().Name != "dotnet-swagger")
+        {
+            var hosts = app.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
+            if (hosts == null || hosts.Length == 0)
+            {
+                throw new InvalidOperationException("No CORS origins found. Please add a 'Cors:AllowedOrigins' section to your configuration with a string array, and at least one origin.");
+            }
+
+            app.UseCors(
+                corsBuilder =>
+                {
+                    corsBuilder
+                        .WithOrigins(hosts!)
+                        .AllowCredentials()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                });
+        }
 
         return app;
     }
 
-    public static WebApplication UseSimpleEmailPasswordCookieAuth(this WebApplication app)
+    public static WebApplication UseZestAuth(this WebApplication app)
     {
         app.MapIdentityApi<IdentityUser>();
 
