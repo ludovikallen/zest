@@ -3,7 +3,8 @@
     <PropertyGroup>
         <MetroNugetDirectory>$(MSBuildThisFileDirectory)..</MetroNugetDirectory>
         <MetroGeneratorAssembly>$(MetroNugetDirectory)\lib\net9.0\MetroGenerator.dll</MetroGeneratorAssembly>
-        <OpenApiOutputFile>$(MSBuildProjectDirectory)\generated\swagger.json</OpenApiOutputFile>
+        <OpenApiOutputDirectory>$(MSBuildProjectDirectory)\generated</OpenApiOutputDirectory>
+        <OpenApiOutputFile>$(OpenApiOutputDirectory)\swagger.json</OpenApiOutputFile>
         <TypeScriptClientOutputDirectory>$(FrontendSourcePath)\generated</TypeScriptClientOutputDirectory>
     </PropertyGroup>
 
@@ -56,12 +57,12 @@
 
     <Target Name="forceOpenApiReGenerationOnRebuild" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="CoreClean">
         <Message Text="Metro: Cleaning previously generated OpenApi document..." Importance="high" />
-        <Delete Files="$(OpenApiOutputFile)"></Delete>
+        <RemoveDir Directories="$(OpenApiOutputDirectory)"></RemoveDir>
     </Target>
 
     <Target Name="forceFolderReGenerationOnRebuild" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="CoreClean">
         <Message Text="Metro: Cleaning previously generated folder..." Importance="high" />
-        <Delete Files="$(TypeScriptClientOutputDirectory)\*"></Delete>
+        <RemoveDir Directories="$(TypeScriptClientOutputDirectory)"></RemoveDir>
     </Target>
 
 </Project>
