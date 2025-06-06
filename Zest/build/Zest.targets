@@ -1,67 +1,67 @@
 <Project>
 
     <PropertyGroup>
-        <MetroNugetDirectory>$(MSBuildThisFileDirectory)..</MetroNugetDirectory>
-        <MetroGeneratorAssembly>$(MetroNugetDirectory)\lib\net9.0\MetroGenerator.dll</MetroGeneratorAssembly>
+        <ZestNugetDirectory>$(MSBuildThisFileDirectory)..</ZestNugetDirectory>
+        <ZestGeneratorAssembly>$(ZestNugetDirectory)\lib\net9.0\ZestGenerator.dll</ZestGeneratorAssembly>
         <OpenApiOutputDirectory>$(MSBuildProjectDirectory)\generated</OpenApiOutputDirectory>
         <OpenApiOutputFile>$(OpenApiOutputDirectory)\swagger.json</OpenApiOutputFile>
         <TypeScriptClientOutputDirectory>$(FrontendSourcePath)\generated</TypeScriptClientOutputDirectory>
     </PropertyGroup>
 
     <UsingTask
-            TaskName="MetroGenerator.CopyFilesToClient"
-            AssemblyFile="$(MetroGeneratorAssembly)" />
+            TaskName="ZestGenerator.CopyFilesToClient"
+            AssemblyFile="$(ZestGeneratorAssembly)" />
 
     <UsingTask
-            TaskName="MetroGenerator.CreateGeneratedFolder"
-            AssemblyFile="$(MetroGeneratorAssembly)" />
+            TaskName="ZestGenerator.CreateGeneratedFolder"
+            AssemblyFile="$(ZestGeneratorAssembly)" />
 
     <UsingTask
-            TaskName="MetroGenerator.TypeScriptClientGenerator"
-            AssemblyFile="$(MetroGeneratorAssembly)" />
+            TaskName="ZestGenerator.TypeScriptClientGenerator"
+            AssemblyFile="$(ZestGeneratorAssembly)" />
 
     <UsingTask
-            TaskName="MetroGenerator.OpenApiDocumentGenerator"
-            AssemblyFile="$(MetroGeneratorAssembly)" />
+            TaskName="ZestGenerator.OpenApiDocumentGenerator"
+            AssemblyFile="$(ZestGeneratorAssembly)" />
 
     <Target Name="validateFrontendSourcePath" AfterTargets="Build">
         <Error Condition="'$(FrontendSourcePath)' == ''"
-               Text="Metro: Error - FrontendSourcePath is not set. Please define the FrontendSourcePath property in your project file." />
+               Text="Zest: Error - FrontendSourcePath is not set. Please define the FrontendSourcePath property in your project file." />
     </Target>
 
     <Target Name="generateOpenApi" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="validateFrontendSourcePath">
-        <Message Text="Metro: Generating OpenApi document..." Importance="high" />
+        <Message Text="Zest: Generating OpenApi document..." Importance="high" />
         <OpenApiDocumentGenerator
                 BuildPath="$(MSBuildProjectDirectory)"
                 AssemblyPath="$(TargetPath)"
-                NugetPath="$(MetroNugetDirectory)"
+                NugetPath="$(ZestNugetDirectory)"
         />
     </Target>
 
     <Target Name="copyRunTimeConfig" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="generateOpenApi">
-        <Message Text="Metro: Copying files to client..." Importance="high" />
+        <Message Text="Zest: Copying files to client..." Importance="high" />
         <CopyFilesToClient
                 TypeScriptClientOutputDirectory="$(TypeScriptClientOutputDirectory)"
-                NugetPath="$(MetroNugetDirectory)"
+                NugetPath="$(ZestNugetDirectory)"
         />
     </Target>
 
     <Target Name="generateTypeScriptClient" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="copyRunTimeConfig">
-        <Message Text="Metro: Generating TypeScript client..." Importance="high" />
+        <Message Text="Zest: Generating TypeScript client..." Importance="high" />
         <TypeScriptClientGenerator
                 TypeScriptClientOutputDirectory="$(TypeScriptClientOutputDirectory)"
                 OpenApiFilePath="$(OpenApiOutputFile)"
-                NugetPath="$(MetroNugetDirectory)"
+                NugetPath="$(ZestNugetDirectory)"
         />
     </Target>
 
     <Target Name="forceOpenApiReGenerationOnRebuild" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="CoreClean">
-        <Message Text="Metro: Cleaning previously generated OpenApi document..." Importance="high" />
+        <Message Text="Zest: Cleaning previously generated OpenApi document..." Importance="high" />
         <RemoveDir Directories="$(OpenApiOutputDirectory)"></RemoveDir>
     </Target>
 
     <Target Name="forceFolderReGenerationOnRebuild" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="CoreClean">
-        <Message Text="Metro: Cleaning previously generated folder..." Importance="high" />
+        <Message Text="Zest: Cleaning previously generated folder..." Importance="high" />
         <RemoveDir Directories="$(TypeScriptClientOutputDirectory)"></RemoveDir>
     </Target>
 

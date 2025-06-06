@@ -1,10 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metro", "Metro\Metro.csproj", "{92022B79-C62E-4320-AF1E-53487CA64E20}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zest", "Zest\Zest.csproj", "{92022B79-C62E-4320-AF1E-53487CA64E20}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example", "Example\Example.csproj", "{51350BF8-5BF3-4FE5-9718-C8FCA3447C89}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetroGenerator", "MetroGenerator\MetroGenerator.csproj", "{EFD82648-EACA-46C9-9F3B-6FEFA0C2C175}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZestGenerator", "ZestGenerator\ZestGenerator.csproj", "{EFD82648-EACA-46C9-9F3B-6FEFA0C2C175}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

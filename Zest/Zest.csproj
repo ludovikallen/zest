@@ -5,7 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <PackageId>Metro</PackageId>
+        <PackageId>Zest</PackageId>
         <Version>0.0.1</Version>
         <Authors>Ludovik Allen</Authors>
         <DevelopmentDependency>true</DevelopmentDependency>
@@ -39,7 +39,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="build\Metro.*">
+        <Content Include="build\Zest.*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
             <PackagePath>build</PackagePath>
@@ -57,7 +57,7 @@
     </ItemGroup>
     
     <ItemGroup>
-      <ProjectReference Include="..\MetroGenerator\MetroGenerator.csproj" PrivateAssets="all" />
+      <ProjectReference Include="..\ZestGenerator\ZestGenerator.csproj" PrivateAssets="all" />
     </ItemGroup>
 
 </Project>

@@ -1,31 +1,35 @@
 ﻿using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace MetroGenerator;
+namespace ZestGenerator;
 
-public class CopyFilesToClient : ToolTask
+public class TypeScriptClientGenerator : ToolTask
 {
     [Required]
     public string TypeScriptClientOutputDirectory { get; set; }
 
     [Required]
+    public string OpenApiFilePath { get; set; }
+
+    [Required]
     public string NugetPath { get; set; }
 
-    protected override string ToolName => "CopyFilesToClient";
+
+    protected override string ToolName => "TypeScriptClientGenerator";
 
     protected override string GenerateFullPathToTool()
     {
-        return OperatingSystem.IsWindows() ? "xcopy" : "cp";
+        return OperatingSystem.IsWindows() ? "npx.cmd" : "npx";
+    }
+
+    protected override string GetWorkingDirectory()
+    {
+        return TypeScriptClientOutputDirectory;
     }
 
     protected override string GenerateCommandLineCommands()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            return $"/y /i {NugetPath}\\copied {TypeScriptClientOutputDirectory}\\config";
-        }
-
-        return $"{NugetPath}\\copied {TypeScriptClientOutputDirectory}\\config";
+        return $"--yes @hey-api/openapi-ts --file {NugetPath}\\tools\\TypeScriptClientGeneratorConfig.ts --input {OpenApiFilePath} --output {TypeScriptClientOutputDirectory}\\client";
     }
 
     protected override bool ValidateParameters()
@@ -37,6 +41,14 @@ public class CopyFilesToClient : ToolTask
             Log.LogError(
                 "The TypeScript client output directory path must be a fully qualified path. Please provide a fully qualified path instead of: {0}",
                 TypeScriptClientOutputDirectory);
+        }
+
+        if (!Path.IsPathFullyQualified(OpenApiFilePath))
+        {
+            valid = false;
+            Log.LogError(
+                "The open api file path must be a fully qualified path. Please provide a fully qualified path instead of: {0}",
+                OpenApiFilePath);
         }
 
         if (!Path.Exists(NugetPath))

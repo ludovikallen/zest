@@ -1,5 +1,5 @@
-using Metro;
 using Microsoft.EntityFrameworkCore;
+using Zest;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddSimpleEmailPasswordCookieAuth(options => options.UseInMemoryDatabase("Example"));
 
 builder.Services.AddTypeScriptClientGenerator();

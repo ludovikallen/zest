@@ -2,7 +2,7 @@
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Metro;
+namespace Zest;
 
 public class AuthResponsesOperationFilter : IOperationFilter
 {

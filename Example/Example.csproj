@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Metro" Version="0.0.1" />
+        <PackageReference Include="Zest" Version="0.0.1" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.5" />
     </ItemGroup>
 

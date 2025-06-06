@@ -1,7 +1,7 @@
 ﻿using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace MetroGenerator;
+namespace ZestGenerator;
 
 public class OpenApiDocumentGenerator : ToolTask
 {

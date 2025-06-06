@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Metro;
+namespace Zest;
 
 public static class TypeScriptClientGeneratorService
 {
