@@ -10,12 +10,16 @@ using Microsoft.Extensions.Hosting;
 
 namespace Zest;
 
-public static class TypeScriptClientGeneratorService
+public static class ZestService
 {
     public static IServiceCollection AddZest(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(options => options.OperationFilter<AuthResponsesOperationFilter>());
+        services.AddSwaggerGen(options =>
+        {
+            options.OperationFilter<AuthResponsesOperationFilter>();
+            options.NonNullableReferenceTypesAsRequired();
+        });
 
         return services;
     }

@@ -1,0 +1,398 @@
+/* Landing Page Styles */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Global Styles */
+.landing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.light .landing-container {
+  background: linear-gradient(to bottom, #f5f5f5, #e5e5e5);
+}
+
+.dark .landing-container {
+  background: linear-gradient(to bottom, #0a0a0a, #171717);
+}
+
+/* Features Section */
+.features-section {
+  padding: 2rem 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.features-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.features-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 0 1rem;
+}
+
+.features-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s;
+  backdrop-filter: blur(4px);
+  white-space: normal;
+  text-align: center;
+}
+
+.light .features-tag {
+  background: linear-gradient(to right, rgba(250, 204, 21, 0.1), rgba(249, 115, 22, 0.1));
+  border: 1px solid rgba(250, 204, 21, 0.2);
+  color: rgb(194, 120, 0);
+}
+
+.dark .features-tag {
+  background: linear-gradient(to right, rgba(250, 204, 21, 0.1), rgba(249, 115, 22, 0.1));
+  border: 1px solid rgba(250, 204, 21, 0.2);
+  color: rgb(253, 224, 71);
+}
+
+.features-tag:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.features-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.light .features-title {
+  color: #333;
+}
+
+.dark .features-title {
+  color: white;
+}
+
+@media (min-width: 768px) {
+  .features-title {
+    font-size: 3rem;
+  }
+
+  .features-section {
+    padding: 2rem 0;
+  }
+}
+
+.gradient-text {
+  background-image: linear-gradient(to right, #f59e0b, #ea580c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block; /* This ensures the background is applied properly */
+}
+
+.features-description {
+  font-size: 1rem;
+  max-width: 48rem;
+  margin: 0 auto;
+  line-height: 1.75;
+}
+
+.light .features-description {
+  color: #555;
+}
+
+.dark .features-description {
+  color: rgb(209, 213, 219);
+}
+
+@media (min-width: 768px) {
+  .features-description {
+    font-size: 1.25rem;
+  }
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 3rem;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .features-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+}
+
+.feature-card {
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.light .feature-card {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.dark .feature-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feature-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.feature-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.light .feature-title {
+  color: #333;
+}
+
+.dark .feature-title {
+  color: white;
+}
+
+.feature-text {
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.light .feature-text {
+  color: #555;
+}
+
+.dark .feature-text {
+  color: rgb(156, 163, 175);
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 640px) {
+  .action-buttons {
+    flex-direction: row;
+  }
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .action-button {
+    width: auto;
+  }
+}
+
+.primary-button {
+  background: linear-gradient(to right, #f59e0b, #ea580c);
+  color: white;
+  border: none;
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+}
+
+.secondary-button {
+  background-color: transparent;
+  border: 1px solid;
+}
+
+.light .secondary-button {
+  color: #333;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.dark .secondary-button {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.secondary-button:hover {
+  transform: translateY(-2px);
+}
+
+.light .secondary-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark .secondary-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Update code section styling */
+.code-section {
+  width: 100%;
+  max-width: 1280px;
+  margin: 4rem auto 0;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+.code-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.code-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.light .code-title {
+  color: #333;
+}
+
+.dark .code-title {
+  color: white;
+}
+
+.code-container {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.code-info {
+  padding: 1rem 0;
+}
+
+.code-description {
+  line-height: 1.6;
+}
+
+.light .code-description {
+  color: #555;
+}
+
+.dark .code-description {
+  color: rgb(156, 163, 175);
+}
+
+/* Make code blocks responsive */
+.code-box {
+  background: rgba(17, 24, 39, 0.9);
+  color: #e5e7eb;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  overflow-x: auto;
+  line-height: 1.5;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Note: We're keeping the code boxes dark in both modes for readability */
+
+@media (min-width: 768px) {
+  .code-box {
+    padding: 1.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Fix code step layout */
+.code-step {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .code-step {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2rem;
+  }
+
+  .code-box {
+    flex: 0 0 50%; /* Fixed width proportion on larger screens */
+    max-width: 50%;
+  }
+
+  .code-info {
+    flex: 0 0 45%;
+    padding: 0;
+  }
+}
+
+/* Override SyntaxHighlighter width */
+.code-box pre {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  margin: 0 !important;
+}
+
+/* Make sure code doesn't overflow its container */
+pre, code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
