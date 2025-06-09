@@ -5,7 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <PackageId>Zest</PackageId>
+        <PackageId>LudovikAllen.Zest</PackageId>
         <Version>0.0.1</Version>
         <Authors>Ludovik Allen</Authors>
         <DevelopmentDependency>true</DevelopmentDependency>
@@ -33,7 +33,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="build\Zest.*">
+        <Content Include="build\LudovikAllen.Zest.*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
             <PackagePath>build</PackagePath>

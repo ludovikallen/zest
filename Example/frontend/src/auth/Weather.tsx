@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { type WeatherForecastReadable, WeatherForecastService } from "../generated/client";
+import { type WeatherForecastReadable, WeatherForecast } from "../generated/client";
 import "../App.css";
 import { useAuth } from "../App.tsx";
 
@@ -11,7 +11,7 @@ const Weather = () => {
   useEffect(() => {
     if (state.isAuthenticated) {
       setLoading(true);
-      WeatherForecastService.getWeatherForecast().then(x => {
+      WeatherForecast.getWeatherForecast().then(x => {
         if (x.error) {
           console.log(x.error);
         } else if (x.data) {

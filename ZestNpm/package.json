@@ -1,5 +1,5 @@
 {
-  "name": "zest-framework",
+  "name": "@ludovikallen/zest",
   "version": "0.0.1",
   "description": "",
   "license": "MIT",
@@ -7,7 +7,8 @@
   "type": "module",
   "main": "index.ts",
   "peerDependencies": {
-    "@hey-api/client-fetch": "^0.12.0"
+    "@hey-api/client-fetch": "^0.12.0",
+    "zod": "^3.25.56"
   },
   "dependencies": {
     "react": "^19.1.0"

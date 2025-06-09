@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "react": "^19.1.0",
-    "zest-framework": "0.0.1",
+    "@ludovikallen/zest": "file:../../ZestNpm/",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {

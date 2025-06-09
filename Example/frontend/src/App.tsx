@@ -3,8 +3,8 @@ import Weather from './auth/Weather'
 import './auth/Auth.css'
 import './App.css'
 
-import { ExampleVersion1000CultureNeutralPublicKeyTokenNullService as AuthService } from "./generated/client";
-import {configureAuth} from "zest-framework/AuthContext.tsx";
+import { ExampleVersion1000CultureNeutralPublicKeyTokenNull as AuthService } from "./generated/client";
+import {configureAuth} from "@ludovikallen/zest/AuthContext.tsx";
 
 const auth = configureAuth(AuthService);
 
