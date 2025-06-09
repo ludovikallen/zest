@@ -25,12 +25,6 @@
             <PackagePath>copied</PackagePath>
         </Content>
 
-        <Content Include="AuthContext.tsx">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Pack>true</Pack>
-            <PackagePath>copied</PackagePath>
-        </Content>
-
         <Content Include="dotnet-swagger*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
@@ -55,7 +49,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
-    
+
     <ItemGroup>
       <ProjectReference Include="..\ZestGenerator\ZestGenerator.csproj" PrivateAssets="all" />
     </ItemGroup>

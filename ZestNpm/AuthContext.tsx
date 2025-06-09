@@ -10,79 +10,79 @@ type AuthState<TUser> = Readonly<{
 
 interface AuthService<TUser, TUserError, TLogin, TLoginError, TRegister, TRegisterError, TLogout, TLogoutError> {
     getManageInfo: () => Promise<({
-            data: TUser;
-            error: undefined;
-        } | {
-            data: undefined;
-            error: TUserError;
-        } & {
-            request: Request;
-            response: Response;
-        })>;
+        data: TUser;
+        error: undefined;
+    } | {
+        data: undefined;
+        error: TUserError;
+    } & {
+        request: Request;
+        response: Response;
+    })>;
     postLogin: (params: { query: { useCookies: boolean }, body: { email: string, password: string } }) => Promise<({
-            data: TLogin;
-            error: undefined;
-        } | {
-            data: undefined;
-            error: TLoginError;
-        } & {
-            request: Request;
-            response: Response;
-        })>;
+        data: TLogin;
+        error: undefined;
+    } | {
+        data: undefined;
+        error: TLoginError;
+    } & {
+        request: Request;
+        response: Response;
+    })>;
     postRegister: (params: { body: { email: string, password: string } }) => Promise<({
-            data: TRegister;
-            error: undefined;
-        } | {
-            data: undefined;
-            error: TRegisterError;
-        } & {
-            request: Request;
-            response: Response;
-        })>;
+        data: TRegister;
+        error: undefined;
+    } | {
+        data: undefined;
+        error: TRegisterError;
+    } & {
+        request: Request;
+        response: Response;
+    })>;
     postLogout: () => Promise<({
-            data: TLogout;
-            error: undefined;
-        } | {
-            data: undefined;
-            error: TLogoutError;
-        } & {
-            request: Request;
-            response: Response;
-        })>;
+        data: TLogout;
+        error: undefined;
+    } | {
+        data: undefined;
+        error: TLogoutError;
+    } & {
+        request: Request;
+        response: Response;
+    })>;
 }
 
 interface Authentication<TUser, TLogin, TLoginError, TRegister, TRegisterError, TLogout, TLogoutError> {
     state: AuthState<TUser>
     login: (email: string, password: string) => Promise<({
-            data: TLogin;
-            error: undefined;
-        } | {
-            data: undefined;
-            error: TLoginError;
-        } & {
-            request: Request;
-            response: Response;
-        })>;
+        data: TLogin;
+        error: undefined;
+    } | {
+        data: undefined;
+        error: TLoginError;
+    } & {
+        request: Request;
+        response: Response;
+    })>;
     register: (email: string, password: string) => Promise<({
-            data: TRegister;
-            error: undefined;
-        } | {
-            data: undefined;
-            error: TRegisterError;
-        } & {
-            request: Request;
-            response: Response;
-        })>;
+        data: TRegister;
+        error: undefined;
+    } | {
+        data: undefined;
+        error: TRegisterError;
+    } & {
+        request: Request;
+        response: Response;
+    })>;
     logout: () => Promise<({
-            data: TLogout;
-            error: undefined;
-        } | {
-            data: undefined;
-            error: TLogoutError;
-        } & {
-            request: Request;
-            response: Response;
-        })>;
+        data: TLogout;
+        error: undefined;
+    } | {
+        data: undefined;
+        error: TLogoutError;
+    } & {
+        request: Request;
+        response: Response;
+    })>;
 }
 
 const AuthContext = createContext<Authentication<any, any, any, any, any, any, any>>({

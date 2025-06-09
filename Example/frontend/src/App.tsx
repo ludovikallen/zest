@@ -4,7 +4,7 @@ import './auth/Auth.css'
 import './App.css'
 
 import { ExampleVersion1000CultureNeutralPublicKeyTokenNullService as AuthService } from "./generated/client";
-import {configureAuth} from "./generated/config/AuthContext.tsx";
+import {configureAuth} from "zest-framework/AuthContext.tsx";
 
 const auth = configureAuth(AuthService);
 
