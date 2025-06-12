@@ -22,7 +22,7 @@
         <Content Include="TypeScriptRuntimeConfig.ts">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
-            <PackagePath>copied</PackagePath>
+            <PackagePath>config</PackagePath>
         </Content>
 
         <Content Include="dotnet-swagger*">

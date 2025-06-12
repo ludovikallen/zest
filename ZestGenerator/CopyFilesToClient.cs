@@ -22,10 +22,10 @@ public class CopyFilesToClient : ToolTask
     {
         if (OperatingSystem.IsWindows())
         {
-            return $"/y /i {NugetPath}\\copied {TypeScriptClientOutputDirectory}\\config";
+            return $"/y /i {NugetPath}\\config {TypeScriptClientOutputDirectory}\\config";
         }
 
-        return $"{NugetPath}\\copied {TypeScriptClientOutputDirectory}\\config";
+        return $"-r {NugetPath}\\config\\ {TypeScriptClientOutputDirectory}";
     }
 
     protected override bool ValidateParameters()

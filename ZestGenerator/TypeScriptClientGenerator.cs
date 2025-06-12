@@ -14,7 +14,6 @@ public class TypeScriptClientGenerator : ToolTask
     [Required]
     public string NugetPath { get; set; }
 
-
     protected override string ToolName => "TypeScriptClientGenerator";
 
     protected override string GenerateFullPathToTool()
