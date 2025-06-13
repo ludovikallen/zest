@@ -12,4 +12,8 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.5" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include=".run\dev.run.xml" />
+    </ItemGroup>
+
 </Project>
