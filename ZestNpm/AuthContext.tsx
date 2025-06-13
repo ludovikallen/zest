@@ -9,7 +9,7 @@ type AuthState<TUser> = Readonly<{
 }>;
 
 interface AuthService<TUser, TUserError, TLogin, TLoginError, TRegister, TRegisterError, TLogout, TLogoutError> {
-    getManageInfo: () => Promise<({
+    getAccountStatus: () => Promise<({
         data: TUser;
         error: undefined;
     } | {
@@ -137,7 +137,7 @@ const AuthProvider = <TUser, TUserError, TLogin, TLoginError, TRegister, TRegist
     });
 
     const checkAuthStatus = async () => {
-        const response = await authService.getManageInfo();
+        const response = await authService.getAccountStatus();
 
         if (response.data) {
             setState((prevState) => ({

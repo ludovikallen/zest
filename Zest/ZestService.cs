@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -73,6 +74,8 @@ public static class ZestService
                 return Results.Ok();
             })
             .RequireAuthorization();
+
+        app.MapGet("/account/status", (SignInManager<IdentityUser> signInManager, ClaimsPrincipal user) => Results.Ok((object?)signInManager.IsSignedIn(user)));
 
         return app;
     }

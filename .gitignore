@@ -9,3 +9,4 @@ Example/frontend/src/generated/
 */node_modules
 */_pagefind/
 */.next
+/.vs
