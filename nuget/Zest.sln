@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zest", "base\Zest.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZestGenerator", "generator\ZestGenerator.csproj", "{EFD82648-EACA-46C9-9F3B-6FEFA0C2C175}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZestTests", "tests\ZestTests\ZestTests.csproj", "{65D3622E-9BA3-41FE-B527-7E90D8043AFF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{EFD82648-EACA-46C9-9F3B-6FEFA0C2C175}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EFD82648-EACA-46C9-9F3B-6FEFA0C2C175}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EFD82648-EACA-46C9-9F3B-6FEFA0C2C175}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65D3622E-9BA3-41FE-B527-7E90D8043AFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65D3622E-9BA3-41FE-B527-7E90D8043AFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65D3622E-9BA3-41FE-B527-7E90D8043AFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65D3622E-9BA3-41FE-B527-7E90D8043AFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
