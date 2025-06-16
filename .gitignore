@@ -10,3 +10,5 @@ Example/frontend/src/generated/
 */_pagefind/
 */.next
 /.vs
+/.idea
+/.jj

@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zest", "base\Zest.csproj", "{92022B79-C62E-4320-AF1E-53487CA64E20}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZestGenerator", "generator\ZestGenerator.csproj", "{EFD82648-EACA-46C9-9F3B-6FEFA0C2C175}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{92022B79-C62E-4320-AF1E-53487CA64E20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92022B79-C62E-4320-AF1E-53487CA64E20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92022B79-C62E-4320-AF1E-53487CA64E20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92022B79-C62E-4320-AF1E-53487CA64E20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFD82648-EACA-46C9-9F3B-6FEFA0C2C175}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFD82648-EACA-46C9-9F3B-6FEFA0C2C175}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFD82648-EACA-46C9-9F3B-6FEFA0C2C175}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFD82648-EACA-46C9-9F3B-6FEFA0C2C175}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
