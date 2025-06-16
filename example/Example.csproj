@@ -8,6 +8,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Include="frontend\example.client.esproj" />
+    </ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="frontend\example.client.esproj">
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+		</ProjectReference>
+	</ItemGroup>
+
+    <ItemGroup>
 		<PackageReference Include="LudovikAllen.Zest" Version="0.0.1" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.5" />
     </ItemGroup>
