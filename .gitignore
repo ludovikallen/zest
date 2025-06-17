@@ -10,5 +10,7 @@ Example/frontend/src/generated/
 */_pagefind/
 */.next
 /.vs
+*/.vs/*
 /.idea
 /.jj
+*.esproj.user

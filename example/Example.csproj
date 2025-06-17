@@ -16,13 +16,11 @@
     </ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="frontend\example.client.esproj">
-			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-		</ProjectReference>
+		<ProjectReference Include="frontend\example.client.esproj" />
 	</ItemGroup>
 
     <ItemGroup>
-		<PackageReference Include="LudovikAllen.Zest" Version="0.0.1" />
+		<PackageReference Include="LudovikAllen.Zest" Version="0.0.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />
     </ItemGroup>
 

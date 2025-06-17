@@ -1,8 +1,8 @@
 ﻿using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace ZestGenerator;
-
+namespace ZestGenerator
+{
 public class OpenApiDocumentGenerator : ToolTask
 {
     [Required]
@@ -30,31 +30,26 @@ public class OpenApiDocumentGenerator : ToolTask
     {
         //http address is not allowed
         var valid = true;
-        if (!Path.Exists(BuildPath))
+        if (string.IsNullOrEmpty(BuildPath))
         {
             valid = false;
-            Log.LogError(
-                "The build path must exist. Please verify the path: {0}",
-                BuildPath);
+            Log.LogError("The build path must not be null or empty.",BuildPath);
         }
 
-        if (!Path.Exists(AssemblyPath))
+        if (string.IsNullOrEmpty(AssemblyPath))
         {
             valid = false;
-            Log.LogError(
-                "The assembly path must exist. Please verify the path: {0}",
-                AssemblyPath);
+            Log.LogError("The assembly path must not be null or empty.");
         }
 
 
-        if (!Path.Exists(NugetPath))
+        if (string.IsNullOrEmpty(NugetPath))
         {
             valid = false;
-            Log.LogError(
-                "The nuget path must exist. Please verify the path: {0}",
-                NugetPath);
+            Log.LogError("The nuget path must not be null or empty.");
         }
 
         return valid;
     }
+}
 }
