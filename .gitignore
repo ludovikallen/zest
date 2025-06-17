@@ -1,0 +1,14 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+.idea
+Example/generated/
+Example/frontend/src/generated/
+*/node_modules
+*/_pagefind/
+*/.next
+/.vs
+/.idea
+/.jj

@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: Example/Dockerfile
+      target: backend
+    container_name: zest-backend
+    environment:
+      BACKEND_PORT: ${BACKEND_PORT:-8080}
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:${BACKEND_PORT:-8080}
+      ConnectionStrings__DefaultConnection: ${DATABASE_CONNECTION_STRING:-}
+      Cors__AllowedOrigins__0: ${BASE_URL:-http://localhost}
+      Cors__AllowedOrigins__1: ${BASE_URL:-http://localhost}:${NGINX_LISTEN_PORT:-80}
+    ports:
+      - "${BACKEND_PORT:-8080}:${BACKEND_PORT:-8080}"
+    networks:
+      - zest-network
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: Example/Dockerfile
+      target: frontend
+    container_name: zest-frontend
+    environment:
+      BASE_URL: ${BASE_URL:-http://localhost}
+      BACKEND_PORT: ${BACKEND_PORT:-8080}
+      NGINX_API_PATH_SEGMENT: ${NGINX_API_PATH_SEGMENT:-api}
+      ZEST_API_BASE_URL: ${ZEST_API_BASE_URL:-${BASE_URL:-http://localhost}/${NGINX_API_PATH_SEGMENT:-api}}
+      NGINX_LISTEN_PORT: ${NGINX_LISTEN_PORT:-80}
+    ports:
+      - "${NGINX_LISTEN_PORT:-80}:${NGINX_LISTEN_PORT:-80}"
+    networks:
+      - zest-network
+    volumes:
+      - ./templates:/etc/nginx/templates
+
+networks:
+  zest-network:
+    driver: bridge
+
+volumes:
+  nginx-cache:
+  nginx-logs:

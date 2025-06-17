@@ -1,0 +1,68 @@
+<Project>
+
+    <PropertyGroup>
+        <ZestNugetDirectory>$(MSBuildThisFileDirectory)..</ZestNugetDirectory>
+        <ZestGeneratorAssembly>$(ZestNugetDirectory)\lib\net9.0\ZestGenerator.dll</ZestGeneratorAssembly>
+        <OpenApiOutputDirectory>$(MSBuildProjectDirectory)\generated</OpenApiOutputDirectory>
+        <OpenApiOutputFile>$(OpenApiOutputDirectory)\swagger.json</OpenApiOutputFile>
+        <TypeScriptClientOutputDirectory>$(FrontendSourcePath)\generated</TypeScriptClientOutputDirectory>
+    </PropertyGroup>
+
+    <UsingTask
+            TaskName="ZestGenerator.CopyFilesToClient"
+            AssemblyFile="$(ZestGeneratorAssembly)" />
+
+    <UsingTask
+            TaskName="ZestGenerator.CreateGeneratedFolder"
+            AssemblyFile="$(ZestGeneratorAssembly)" />
+
+    <UsingTask
+            TaskName="ZestGenerator.TypeScriptClientGenerator"
+            AssemblyFile="$(ZestGeneratorAssembly)" />
+
+    <UsingTask
+            TaskName="ZestGenerator.OpenApiDocumentGenerator"
+            AssemblyFile="$(ZestGeneratorAssembly)" />
+
+    <Target Name="validateFrontendSourcePath" AfterTargets="Build">
+        <Error Condition="'$(FrontendSourcePath)' == ''"
+               Text="Zest: Error - FrontendSourcePath is not set. Please define the FrontendSourcePath property in your project file." />
+    </Target>
+
+    <Target Name="generateOpenApi" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="validateFrontendSourcePath">
+        <Message Text="Zest: Generating OpenApi document..." Importance="high" />
+        <OpenApiDocumentGenerator
+                BuildPath="$(MSBuildProjectDirectory)"
+                AssemblyPath="$(TargetPath)"
+                NugetPath="$(ZestNugetDirectory)"
+        />
+    </Target>
+
+    <Target Name="copyRunTimeConfig" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="generateOpenApi">
+        <Message Text="Zest: Copying files to client..." Importance="high" />
+        <CopyFilesToClient
+                TypeScriptClientOutputDirectory="$(TypeScriptClientOutputDirectory)"
+                NugetPath="$(ZestNugetDirectory)"
+        />
+    </Target>
+
+    <Target Name="generateTypeScriptClient" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="copyRunTimeConfig">
+        <Message Text="Zest: Generating TypeScript client..." Importance="high" />
+        <TypeScriptClientGenerator
+                TypeScriptClientOutputDirectory="$(TypeScriptClientOutputDirectory)"
+                OpenApiFilePath="$(OpenApiOutputFile)"
+                NugetPath="$(ZestNugetDirectory)"
+        />
+    </Target>
+
+    <Target Name="forceOpenApiReGenerationOnRebuild" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="CoreClean">
+        <Message Text="Zest: Cleaning previously generated OpenApi document..." Importance="high" />
+        <RemoveDir Directories="$(OpenApiOutputDirectory)"></RemoveDir>
+    </Target>
+
+    <Target Name="forceFolderReGenerationOnRebuild" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="CoreClean">
+        <Message Text="Zest: Cleaning previously generated folder..." Importance="high" />
+        <RemoveDir Directories="$(TypeScriptClientOutputDirectory)"></RemoveDir>
+    </Target>
+
+</Project>
