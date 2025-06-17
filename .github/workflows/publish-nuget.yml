@@ -25,7 +25,7 @@ jobs:
       run: dotnet build nuget/base/Zest.csproj --configuration Release --no-restore
 
     - name: Pack
-      run: dotnet pack nuget/base/Zest.csproj --configuration Release --no-build --output ./artifacts
+      run: dotnet pack nuget/base/Zest.csproj --configuration Release --output ./artifacts
 
     - name: Upload NuGet package artifact
       uses: actions/upload-artifact@v4
