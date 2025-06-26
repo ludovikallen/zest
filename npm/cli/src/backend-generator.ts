@@ -3,7 +3,7 @@ import path from 'path';
 import type { ProjectOptions } from './types.js';
 
 export async function createBackendFiles(projectPath: string, options: ProjectOptions): Promise<void> {
-  const { projectName, features, useAuth } = options;
+  const { projectName, database, useAuth } = options;
 
   // Create .csproj file
   const csprojContent = `<Project ToolsVersion="17.0" Sdk="Microsoft.NET.Sdk.Web">
@@ -23,13 +23,15 @@ export async function createBackendFiles(projectPath: string, options: ProjectOp
 		<Content Include="frontend\\${projectName.toLowerCase()}.client.esproj" />
     </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="frontend\\${projectName.toLowerCase()}.client.esproj" />
-	</ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="frontend\\${projectName.toLowerCase()}.client.esproj" />
+    </ItemGroup>
 
     <ItemGroup>
-		<PackageReference Include="LudovikAllen.Zest" Version="0.0.2" />
-        ${features.includes('efcore') ? '<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />' : ''}
+		  <PackageReference Include="LudovikAllen.Zest" Version="0.0.2" />
+      ${database === 'inmemory' ? '<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />' :
+      database === 'sqlite' ? '<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />' :
+      '<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />'}
     </ItemGroup>
 
 </Project>`;
@@ -44,7 +46,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-${useAuth ? 'builder.Services.AddZestAuth(options => options.UseInMemoryDatabase("' + projectName + '"));' : ''}
+${useAuth ? getAuthLine(useAuth, database, projectName) : ''}
 
 builder.Services.AddZest();
 
@@ -66,10 +68,9 @@ app.Run();
   await fs.writeFile(path.join(projectPath, 'Program.cs'), programContent);
 
   // Create Controllers directory and WeatherForecastController if weather feature is selected
-  if (features.includes('weather')) {
-    await fs.ensureDir(path.join(projectPath, 'Controllers'));
+  await fs.ensureDir(path.join(projectPath, 'Controllers'));
     
-    const weatherControllerContent = `using Microsoft.AspNetCore.Mvc;
+  const weatherControllerContent = `using Microsoft.AspNetCore.Mvc;
 
 namespace ${projectName}.Controllers;
 
@@ -103,9 +104,9 @@ public class WeatherForecastController : ControllerBase
 }
 `;
 
-    await fs.writeFile(path.join(projectPath, 'Controllers', 'WeatherForecastController.cs'), weatherControllerContent);
+  await fs.writeFile(path.join(projectPath, 'Controllers', 'WeatherForecastController.cs'), weatherControllerContent);
 
-    const weatherForecastContent = `namespace ${projectName};
+  const weatherForecastContent = `namespace ${projectName};
 
 public class WeatherForecast
 {
@@ -119,8 +120,8 @@ public class WeatherForecast
 }
 `;
 
-    await fs.writeFile(path.join(projectPath, 'WeatherForecast.cs'), weatherForecastContent);
-  }
+  await fs.writeFile(path.join(projectPath, 'WeatherForecast.cs'), weatherForecastContent);
+  
 
   // Create Properties directory and launchSettings.json
   await fs.ensureDir(path.join(projectPath, 'Properties'));
@@ -167,7 +168,32 @@ public class WeatherForecast
   },
   "AllowedHosts": "*"
 }`;
+  const devAppSettingsContent = `{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "Cors": {
+    "AllowedOrigins": ["http://localhost:5173"]
+  }
+}`;
 
   await fs.writeFile(path.join(projectPath, 'appsettings.json'), appSettingsContent);
-  await fs.writeFile(path.join(projectPath, 'appsettings.Development.json'), appSettingsContent);
+  await fs.writeFile(path.join(projectPath, 'appsettings.Development.json'), devAppSettingsContent);
+}
+
+function getAuthLine(useAuth: boolean, database: string, projectName: string): string | false {
+  if (useAuth) {
+    if (database === 'inmemory') {
+      return 'builder.Services.AddZestAuth(options => options.UseInMemoryDatabase("' + projectName + '"));';
+    } else if (database === 'sqlite') {
+      return 'builder.Services.AddZestAuth(options => options.UseSqliteDatabase("Data Source=' + projectName + '.db"));';
+    } else if (database === 'postgresql') {
+      return 'builder.Services.AddZestAuth(options => options.UseNpgsql("postgres://postgres:postgres@localhost:5432/' + projectName +'));';
+    }
+  }
+
+  return false;
 }

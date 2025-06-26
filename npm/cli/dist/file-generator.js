@@ -20,17 +20,14 @@ A Zest application with .NET backend and React frontend.
 ## Features
 
 ${options.useAuth ? '- ✅ Authentication' : '- ❌ Authentication'}
-${features.includes('weather') ? '- ✅ Weather API Example' : '- ❌ Weather API Example'}
-${features.includes('efcore') ? '- ✅ Entity Framework In-Memory Database' : '- ❌ Entity Framework In-Memory Database'}
-${features.includes('swagger') ? '- ✅ Swagger/OpenAPI Documentation' : '- ❌ Swagger/OpenAPI Documentation'}
+- ✅ Weather API Example
 ${features.includes('docker') ? '- ✅ Docker Support' : '- ❌ Docker Support'}
-${features.includes('eslint') ? '- ✅ ESLint Configuration' : '- ❌ ESLint Configuration'}
 
 ## Getting Started
 
 ### Prerequisites
 
-- .NET ${options.dotnetVersion.replace('net', '').replace('.0', '')} or later
+- .NET 9.0
 - Node.js 18 or later
 - ${options.packageManager}
 
@@ -88,7 +85,7 @@ ${projectName}/
 ## Built With
 
 - [Zest](https://github.com/ludovikallen/zest) - Full-stack framework
-- [.NET ${options.dotnetVersion.replace('net', '').replace('.0', '')}](https://dotnet.microsoft.com/) - Backend framework
+- [.NET 9.0](https://dotnet.microsoft.com/) - Backend framework
 - [React](https://reactjs.org/) - Frontend library
 - [Vite](https://vitejs.dev/) - Frontend build tool
 - [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript

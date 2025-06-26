@@ -47,10 +47,10 @@ The CLI can generate projects with the following features:
 - ✅ **Zest Framework**: Full-stack framework with .NET backend and React frontend
 - ✅ **TypeScript**: Type-safe development for both frontend and backend
 - ✅ **Vite**: Fast frontend build tool and dev server
+- ✅ **Weather API Example**: Sample API controller and frontend integration
 
 ### Optional Features
 - 🔐 **Authentication**: User registration and login with Zest Auth
-- 🌤️ **Weather API Example**: Sample API controller and frontend integration
 - 🗄️ **Entity Framework Core**: In-memory database setup
 - 📚 **Swagger/OpenAPI**: Automatic API documentation
 - 🐳 **Docker Support**: Dockerfile and docker-compose.yml

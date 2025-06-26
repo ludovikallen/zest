@@ -3,7 +3,7 @@ import path from 'path';
 import type { ProjectOptions } from './types.js';
 
 export async function createAdditionalFiles(projectPath: string, options: ProjectOptions): Promise<void> {
-  const { projectName, features } = options;
+  const { projectName, docker } = options;
 
   // Create README.md
   await createReadme(projectPath, options);
@@ -12,13 +12,13 @@ export async function createAdditionalFiles(projectPath: string, options: Projec
   await createGitignore(projectPath);
 
   // Create Docker files if Docker support is selected
-  if (features.includes('docker')) {
+  if (docker) {
     await createDockerFiles(projectPath, projectName);
   }
 }
 
 async function createReadme(projectPath: string, options: ProjectOptions): Promise<void> {
-  const { projectName, features } = options;
+  const { projectName, docker } = options;
   
   const readmeContent = `# ${projectName}
 
@@ -27,11 +27,8 @@ A Zest application with .NET backend and React frontend.
 ## Features
 
 ${options.useAuth ? '- ✅ Authentication' : '- ❌ Authentication'}
-${features.includes('weather') ? '- ✅ Weather API Example' : '- ❌ Weather API Example'}
-${features.includes('efcore') ? '- ✅ Entity Framework In-Memory Database' : '- ❌ Entity Framework In-Memory Database'}
-${features.includes('swagger') ? '- ✅ Swagger/OpenAPI Documentation' : '- ❌ Swagger/OpenAPI Documentation'}
-${features.includes('docker') ? '- ✅ Docker Support' : '- ❌ Docker Support'}
-${features.includes('eslint') ? '- ✅ ESLint Configuration' : '- ❌ ESLint Configuration'}
+- ✅ Weather API Example
+${docker ? '- ✅ Docker Support' : '- ❌ Docker Support'}
 
 ## Getting Started
 
@@ -71,8 +68,6 @@ ${features.includes('eslint') ? '- ✅ ESLint Configuration' : '- ❌ ESLint Con
 The application will be available at:
 - Backend: https://localhost:7000
 - Frontend: http://localhost:5173
-
-${features.includes('swagger') ? '\n### API Documentation\n\nSwagger documentation is available at https://localhost:7000/swagger' : ''}
 
 ## Project Structure
 

@@ -6,7 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { AVAILABLE_FEATURES, DOTNET_VERSIONS } from './types.js';
+import { AVAILABLE_FEATURES } from './types.js';
 import { createBackendFiles } from './backend-generator.js';
 import { createFrontendFiles } from './frontend-generator.js';
 import { createAdditionalFiles } from './file-generator.js';
@@ -34,8 +34,7 @@ async function main() {
         options = {
             projectName: argv.name || 'my-zest-app',
             useAuth: true,
-            features: ['weather', 'efcore', 'swagger', 'eslint'],
-            dotnetVersion: 'net9.0',
+            features: ['docker'],
             packageManager: 'npm',
         };
     }
@@ -62,11 +61,6 @@ async function main() {
             choices: AVAILABLE_FEATURES,
             required: false,
         });
-        const dotnetVersion = await select({
-            message: 'Select .NET version:',
-            choices: DOTNET_VERSIONS,
-            default: 'net9.0',
-        });
         const packageManager = await select({
             message: 'Select package manager:',
             choices: [
@@ -79,8 +73,7 @@ async function main() {
         options = {
             projectName: projectName.trim(),
             useAuth,
-            features,
-            dotnetVersion,
+            features: ['weather', ...features], // Always include weather as default
             packageManager,
         };
     }

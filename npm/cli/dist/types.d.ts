@@ -2,7 +2,6 @@ export interface ProjectOptions {
     projectName: string;
     useAuth: boolean;
     features: string[];
-    dotnetVersion: string;
     packageManager: 'npm' | 'yarn' | 'pnpm';
 }
 export interface FeatureChoice {
@@ -14,5 +13,4 @@ export interface DotNetVersionChoice {
     value: string;
 }
 export declare const AVAILABLE_FEATURES: FeatureChoice[];
-export declare const DOTNET_VERSIONS: DotNetVersionChoice[];
 //# sourceMappingURL=types.d.ts.map

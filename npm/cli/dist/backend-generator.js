@@ -1,12 +1,12 @@
 import fs from 'fs-extra';
 import path from 'path';
 export async function createBackendFiles(projectPath, options) {
-    const { projectName, dotnetVersion, features, useAuth } = options;
+    const { projectName, features, useAuth } = options;
     // Create .csproj file
     const csprojContent = `<Project ToolsVersion="17.0" Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>${dotnetVersion}</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <FrontendSourcePath>$(MSBuildProjectDirectory)\\frontend\\src</FrontendSourcePath>

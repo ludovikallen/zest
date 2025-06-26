@@ -8,7 +8,6 @@ import { fileURLToPath } from 'url';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import type { ProjectOptions } from './types.js';
-import { AVAILABLE_FEATURES } from './types.js';
 import { createBackendFiles } from './backend-generator.js';
 import { createFrontendFiles } from './frontend-generator.js';
 import { createAdditionalFiles } from './file-generator.js';
@@ -41,7 +40,8 @@ async function main() {
     options = {
       projectName: argv.name || 'my-zest-app',
       useAuth: true,
-      features: ['weather', 'efcore', 'swagger', 'eslint'],
+      docker: true,
+      database: 'postgresql',
       packageManager: 'npm',
     };
   } else {
@@ -64,10 +64,19 @@ async function main() {
       default: true,
     });
 
-    const features = await checkbox({
-      message: 'Select additional features:',
-      choices: AVAILABLE_FEATURES,
-      required: false,
+    const docker = await confirm({
+      message: 'Do you want to include Docker files to deploy?',
+      default: true,
+    });
+        
+    const database = await select({
+      message: 'Select package manager:',
+      choices: [
+        { name: 'in-memory', value: 'inmemory' as const },
+        { name: 'sqlite', value: 'sqlite' as const },
+        { name: 'postgresql', value: 'postgresql' as const },
+      ],
+      default: 'postgresql',
     });
 
     const packageManager = await select({
@@ -83,7 +92,8 @@ async function main() {
     options = {
       projectName: projectName.trim(),
       useAuth,
-      features,
+      docker,
+      database,
       packageManager,
     };
   }
@@ -95,6 +105,10 @@ async function main() {
   console.log(chalk.green.bold('\n🎉 Project created successfully!\n'));
   console.log(chalk.cyan('Next steps:'));
   console.log(chalk.gray(`  cd ${options.projectName}`));
+  if (options.database === 'postgresql') {
+    console.log(chalk.gray('  cd local'));
+    console.log(chalk.gray('  docker compose up -d'));
+  }
   console.log(chalk.gray('  dotnet restore'));
   console.log(chalk.gray(`  cd frontend && ${options.packageManager} install`));
   console.log(chalk.gray('  dotnet run\n'));
