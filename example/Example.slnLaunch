@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "dev",
+    "Projects": [
+      {
+        "Path": "Example.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      },
+      {
+        "Path": "frontend\\example.client.esproj",
+        "Action": "Start",
+        "DebugTarget": "localhost (Chrome)"
+      }
+    ]
+  }
+]

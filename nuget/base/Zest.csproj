@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>LudovikAllen.Zest</PackageId>
-        <Version>0.0.1</Version>
+        <Version>0.0.2</Version>
         <Authors>Ludovik Allen</Authors>
         <DevelopmentDependency>true</DevelopmentDependency>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

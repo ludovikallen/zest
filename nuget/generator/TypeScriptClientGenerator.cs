@@ -1,8 +1,10 @@
 ﻿using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using System;
+using System.IO;
 
-namespace ZestGenerator;
-
+namespace ZestGenerator
+{
 public class TypeScriptClientGenerator : ToolTask
 {
     [Required]
@@ -18,7 +20,7 @@ public class TypeScriptClientGenerator : ToolTask
 
     protected override string GenerateFullPathToTool()
     {
-        return OperatingSystem.IsWindows() ? "npx.cmd" : "npx";
+        return Environment.OSVersion.Platform == PlatformID.Win32NT ? "npx.cmd" : "npx";
     }
 
     protected override string GetWorkingDirectory()
@@ -34,30 +36,26 @@ public class TypeScriptClientGenerator : ToolTask
     protected override bool ValidateParameters()
     {
         var valid = true;
-        if (!Path.IsPathFullyQualified(TypeScriptClientOutputDirectory))
+        if (string.IsNullOrEmpty(TypeScriptClientOutputDirectory))
         {
             valid = false;
-            Log.LogError(
-                "The TypeScript client output directory path must be a fully qualified path. Please provide a fully qualified path instead of: {0}",
-                TypeScriptClientOutputDirectory);
+            Log.LogError("The TypeScript client output directory path must not be null or empty.");
         }
 
-        if (!Path.IsPathFullyQualified(OpenApiFilePath))
+        if (string.IsNullOrEmpty(OpenApiFilePath))
         {
             valid = false;
             Log.LogError(
-                "The open api file path must be a fully qualified path. Please provide a fully qualified path instead of: {0}",
-                OpenApiFilePath);
+                "The open api file path must not be null or empty.");
         }
 
-        if (!Path.Exists(NugetPath))
+        if (string.IsNullOrEmpty(NugetPath))
         {
             valid = false;
-            Log.LogError(
-                "The nuget path must exist. Please verify the path: {0}",
-                NugetPath);
+            Log.LogError("The nuget path must not be null or empty.");
         }
 
         return valid;
     }
+}
 }

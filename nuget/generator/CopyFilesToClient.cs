@@ -1,52 +1,51 @@
 ﻿using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using System;
 
-namespace ZestGenerator;
-
-public class CopyFilesToClient : ToolTask
+namespace ZestGenerator
 {
-    [Required]
-    public string TypeScriptClientOutputDirectory { get; set; }
 
-    [Required]
-    public string NugetPath { get; set; }
-
-    protected override string ToolName => "CopyFilesToClient";
-
-    protected override string GenerateFullPathToTool()
+    public class CopyFilesToClient : ToolTask
     {
-        return OperatingSystem.IsWindows() ? "xcopy" : "cp";
-    }
+        [Required]
+        public string TypeScriptClientOutputDirectory { get; set; }
 
-    protected override string GenerateCommandLineCommands()
-    {
-        if (OperatingSystem.IsWindows())
+        [Required]
+        public string NugetPath { get; set; }
+
+        protected override string ToolName => "CopyFilesToClient";
+
+        protected override string GenerateFullPathToTool()
         {
-            return $"/y /i {NugetPath}\\config {TypeScriptClientOutputDirectory}\\config";
+            return Environment.OSVersion.Platform == PlatformID.Win32NT ? "xcopy" : "cp";
         }
 
-        return $"-r {NugetPath}\\config\\ {TypeScriptClientOutputDirectory}";
-    }
-
-    protected override bool ValidateParameters()
-    {
-        var valid = true;
-        if (!Path.IsPathFullyQualified(TypeScriptClientOutputDirectory))
+        protected override string GenerateCommandLineCommands()
         {
-            valid = false;
-            Log.LogError(
-                "The TypeScript client output directory path must be a fully qualified path. Please provide a fully qualified path instead of: {0}",
-                TypeScriptClientOutputDirectory);
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                return $"/y /i {NugetPath}\\config {TypeScriptClientOutputDirectory}\\config";
+            }
+
+            return $"-r {NugetPath}\\config\\ {TypeScriptClientOutputDirectory}";
         }
 
-        if (!Path.Exists(NugetPath))
+        protected override bool ValidateParameters()
         {
-            valid = false;
-            Log.LogError(
-                "The nuget path must exist. Please verify the path: {0}",
-                NugetPath);
-        }
+            var valid = true;
+            if (string.IsNullOrEmpty(TypeScriptClientOutputDirectory))
+            {
+                valid = false;
+                Log.LogError("The TypeScript client output directory path must not be null or empty.");
+            }
 
-        return valid;
+            if (string.IsNullOrEmpty(NugetPath))
+            {
+                valid = false;
+                Log.LogError("The nuget path must not be null or empty.");
+            }
+
+            return valid;
+        }
     }
 }
