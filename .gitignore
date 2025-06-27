@@ -14,3 +14,4 @@ Example/frontend/src/generated/
 /.idea
 /.jj
 *.esproj.user
+**/dist

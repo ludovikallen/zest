@@ -4,6 +4,7 @@ export interface ProjectOptions {
   docker: boolean;
   database: 'inmemory' | 'sqlite' | 'postgresql';
   packageManager: 'npm' | 'yarn' | 'pnpm';
+  runSetup?: boolean;
 }
 
 export interface DotNetVersionChoice {

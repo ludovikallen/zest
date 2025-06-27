@@ -3,7 +3,7 @@ import path from 'path';
 import type { ProjectOptions } from './types.js';
 
 export async function createFrontendFiles(projectPath: string, options: ProjectOptions): Promise<void> {
-  const { projectName, packageManager, features, useAuth } = options;
+  const { projectName, packageManager, useAuth, docker } = options;
   const frontendPath = path.join(projectPath, 'frontend');
   
   await fs.ensureDir(frontendPath);
@@ -17,7 +17,7 @@ export async function createFrontendFiles(projectPath: string, options: ProjectO
     scripts: {
       dev: "vite",
       build: "tsc -b && vite build",
-      lint: features.includes('eslint') ? "eslint ." : undefined,
+      lint: "eslint .",
       preview: "vite preview"
     },
     dependencies: {
@@ -31,21 +31,14 @@ export async function createFrontendFiles(projectPath: string, options: ProjectO
       "@vitejs/plugin-react-swc": "^3.9.0",
       typescript: "~5.8.3",
       vite: "^6.3.5",
-      ...(features.includes('eslint') && {
-        "@eslint/js": "^9.25.0",
-        eslint: "^9.25.0",
-        "eslint-plugin-react-hooks": "^5.2.0",
-        "eslint-plugin-react-refresh": "^0.4.19",
-        globals: "^16.0.0",
-        "typescript-eslint": "^8.30.1"
-      })
+      "@eslint/js": "^9.25.0",
+      eslint: "^9.25.0",
+      "eslint-plugin-react-hooks": "^5.2.0",
+      "eslint-plugin-react-refresh": "^0.4.19",
+      globals: "^16.0.0",
+      "typescript-eslint": "^8.30.1"
     }
   };
-
-  // Remove undefined values
-  if (packageJsonContent.scripts.lint === undefined) {
-    delete packageJsonContent.scripts.lint;
-  }
 
   await fs.writeFile(
     path.join(frontendPath, 'package.json'), 
@@ -53,11 +46,11 @@ export async function createFrontendFiles(projectPath: string, options: ProjectO
   );
 
   // Create esproj file
-  const esprojContent = `<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.0">
-  <PropertyGroup>
-    <StartupCommand>${packageManager} run dev</StartupCommand>
-    <JavaScriptTestFramework>Node</JavaScriptTestFramework>
-  </PropertyGroup>
+  const esprojContent = `<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.586930">
+    <PropertyGroup>
+        <StartupCommand>${packageManager} run dev</StartupCommand>
+        <ShouldRunNpmInstall>true</ShouldRunNpmInstall>
+    </PropertyGroup>
 </Project>`;
 
   await fs.writeFile(path.join(frontendPath, `${projectName.toLowerCase()}.client.esproj`), esprojContent);
@@ -81,15 +74,19 @@ export default defineConfig({
   await createIndexHtml(frontendPath, projectName);
   
   // Create src directory and files
-  await createSourceFiles(frontendPath, projectName, features, useAuth);
+  await createSourceFiles(frontendPath, projectName, useAuth);
   
   // Create public directory
   await createPublicFiles(frontendPath);
 
-  // Create ESLint config if selected
-  if (features.includes('eslint')) {
-    await createEslintConfig(frontendPath);
-  }
+  // Create ESLint config
+  await createEslintConfig(frontendPath);
+
+  // Create .vscode folder with launch.json
+  await createVSCodeConfig(frontendPath);
+
+  // Create environment files
+  await createEnvironmentFiles(frontendPath, docker);
 }
 
 async function createTypeScriptConfigs(frontendPath: string): Promise<void> {
@@ -178,7 +175,7 @@ async function createIndexHtml(frontendPath: string, projectName: string): Promi
   await fs.writeFile(path.join(frontendPath, 'index.html'), indexHtmlContent);
 }
 
-async function createSourceFiles(frontendPath: string, projectName: string, features: string[], useAuth: boolean): Promise<void> {
+async function createSourceFiles(frontendPath: string, projectName: string, useAuth: boolean): Promise<void> {
   const srcPath = path.join(frontendPath, 'src');
   await fs.ensureDir(srcPath);
 
@@ -197,7 +194,7 @@ createRoot(document.getElementById('root')!).render(
   await fs.writeFile(path.join(srcPath, 'main.tsx'), mainTsxContent);
 
   // Create App.tsx based on features
-  await createAppComponent(srcPath, projectName, features, useAuth);
+  await createAppComponent(srcPath, projectName, useAuth);
   
   // Create CSS files
   await createStyleFiles(srcPath);
@@ -208,14 +205,14 @@ createRoot(document.getElementById('root')!).render(
 
   // Create auth files if authentication is enabled
   if (useAuth) {
-    await createAuthFiles(srcPath, features);
+    await createAuthFiles(srcPath);
   }
 }
 
-async function createAppComponent(srcPath: string, projectName: string, features: string[], useAuth: boolean): Promise<void> {
+async function createAppComponent(srcPath: string, projectName: string, useAuth: boolean): Promise<void> {
   let appTsxContent = '';
   
-  if (useAuth && features.includes('weather')) {
+  if (useAuth) {
     appTsxContent = `import AuthContainer from './auth/AuthContainer'
 import Weather from './auth/Weather'
 import './auth/Auth.css'
@@ -247,7 +244,7 @@ function App() {
 }
 
 export default App`;
-  } else if (features.includes('weather')) {
+  } else {
     appTsxContent = `import { useState, useEffect } from 'react'
 import './App.css'
 
@@ -259,51 +256,57 @@ interface WeatherForecast {
 }
 
 function App() {
-  const [forecasts, setForecasts] = useState<WeatherForecast[]>([]);
+  const [weather, setWeather] = useState<WeatherForecastReadable[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/weatherforecast')
-      .then(response => response.json())
-      .then(data => {
-        setForecasts(data);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching weather data:', error);
-        setLoading(false);
-      });
+    setLoading(true);
+    WeatherForecast.getWeatherForecast().then(x => {
+      if (x.error) {
+        console.log(x.error);
+      } else if (x.data) {
+        setWeather(x.data);
+      }
+      setLoading(false);
+    });
   }, []);
 
+  if (loading) {
+    return <div style={{ color: "#333333" }}>Loading weather data...</div>;
+  }
+
   return (
-    <div className="app-container">
-      <h1>${projectName} Weather App</h1>
-      {loading ? (
-        <p>Loading weather data...</p>
+    <div className="weather-container" style={{ color: "#333333" }}>
+      <h2 style={{ color: "#333333" }}>Weather Forecast</h2>
+
+      <div className="user-info">
+        <h3 style={{ color: "#333333" }}>User Information</h3>
+        <p><strong style={{ color: "#333333" }}>Email:</strong> <span style={{ color: "#333333" }}>{state.user?.email}</span></p>
+        <p><strong style={{ color: "#333333" }}>Email Confirmed:</strong> <span style={{ color: "#333333" }}>{state.user?.isEmailConfirmed ? "Yes" : "No"}</span></p>
+      </div>
+
+      {weather.length > 0 ? (
+        <table className="weather-table">
+          <thead>
+            <tr>
+              <th style={{ color: "#333333" }}>Date</th>
+              <th style={{ color: "#333333" }}>Summary</th>
+              <th style={{ color: "#333333" }}>Temp (C)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {weather.map(x => (
+              <tr key={x.date}>
+                <td style={{ color: "#333333" }}>{x.date}</td>
+                <td style={{ color: "#333333" }}>{x.summary || "-"}</td>
+                <td style={{ color: "#333333" }}>{x.temperatureC}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       ) : (
-        <div className="weather-container">
-          {forecasts.map((forecast, index) => (
-            <div key={index} className="weather-card">
-              <h3>{forecast.date}</h3>
-              <p>Temperature: {forecast.temperatureC}°C ({forecast.temperatureF}°F)</p>
-              <p>Summary: {forecast.summary}</p>
-            </div>
-          ))}
-        </div>
+        <p style={{ color: "#333333" }}>No weather data available</p>
       )}
-    </div>
-  );
-}
-
-export default App`;
-  } else {
-    appTsxContent = `import './App.css'
-
-function App() {
-  return (
-    <div className="app-container">
-      <h1>Welcome to ${projectName}!</h1>
-      <p>Your Zest application is ready to go!</p>
     </div>
   );
 }
@@ -315,25 +318,73 @@ export default App`;
 }
 
 async function createStyleFiles(srcPath: string): Promise<void> {
-  const appCssContent = `.app-container {
-  max-width: 1200px;
+  const appCssContent = `#root {
+  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  color: #333333; /* Adding text color */
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.app-container {
+  color: #333333;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #333333;
+}
+
+p, span, div {
+  color: #333333;
 }
 
 .weather-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1rem;
-  margin-top: 2rem;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  color: #333333;
 }
 
-.weather-card {
-  background: #f5f5f5;
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+table {
+  color: #333333;
 }`;
 
   await fs.writeFile(path.join(srcPath, 'App.css'), appCssContent);
@@ -412,178 +463,375 @@ button:focus-visible {
   await fs.writeFile(path.join(srcPath, 'index.css'), indexCssContent);
 }
 
-async function createAuthFiles(srcPath: string, features: string[]): Promise<void> {
+async function createAuthFiles(srcPath: string): Promise<void> {
   const authPath = path.join(srcPath, 'auth');
   await fs.ensureDir(authPath);
 
   // Create auth CSS
   const authCssContent = `.auth-container {
   max-width: 400px;
-  margin: 2rem auto;
-  padding: 2rem;
-  border: 1px solid #ddd;
+  margin: 0 auto;
+  padding: 20px;
   border-radius: 8px;
-  background: #f9f9f9;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  color: #333333; /* Adding text color */
 }
 
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.form-group {
+  margin-bottom: 15px;
 }
 
-.auth-form input {
-  padding: 0.5rem;
-  border: 1px solid #ddd;
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #333333; /* Adding label text color */
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
   border-radius: 4px;
+  font-size: 16px;
+  color: #333333; /* Adding input text color */
+  background-color: #ffffff; /* Ensuring input background is white */
 }
 
-.auth-form button {
-  padding: 0.75rem;
+.error-message {
+  color: #d32f2f;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+button {
+  background-color: #1976d2;
+  color: white;
   border: none;
   border-radius: 4px;
-  background: #007bff;
-  color: white;
+  padding: 10px 15px;
+  font-size: 16px;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.auth-form button:hover {
-  background: #0056b3;
+button:hover {
+  background-color: #1565c0;
+}
+
+button:disabled {
+  background-color: #bdbdbd;
+  cursor: not-allowed;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: #1976d2;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+}
+
+.link-button:hover {
+  background: none;
+  color: #1565c0;
 }
 
 .auth-toggle {
-  margin-top: 1rem;
+  margin-top: 15px;
   text-align: center;
+  color: #333333; /* Adding text color for the toggle messages */
 }
 
-.auth-toggle button {
-  background: none;
-  border: none;
-  color: #007bff;
-  cursor: pointer;
-  text-decoration: underline;
+.user-info {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  color: #333333; /* Adding text color */
+}
+
+.weather-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.weather-table th,
+.weather-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  color: #333333; /* Adding text color for table content */
+}
+
+.weather-table th {
+  background-color: #f2f2f2;
+}
+
+.logout-button {
+  margin-top: 20px;
+}
+
+/* Additional styles to ensure text visibility */
+h1, h2, h3, h4, h5, h6, p {
+  color: #333333;
+}
+
+.weather-container {
+  color: #333333;
 }`;
 
   await fs.writeFile(path.join(authPath, 'Auth.css'), authCssContent);
 
   // Create AuthContainer.tsx
-  const authContainerContent = `import { useState } from 'react';
-import { useAuth } from '../App';
+  const authContainerContent = `import { useState } from "react";
+import Login from "./Login";
+import Register from "./Register";
 
 const AuthContainer = () => {
-    const [isLogin, setIsLogin] = useState(true);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const { login, register } = useAuth();
+  const [view, setView] = useState<"login" | "register">("login");
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            if (isLogin) {
-                await login(email, password);
-            } else {
-                await register(email, password);
-            }
-        } catch (error) {
-            console.error('Authentication error:', error);
-        }
-    };
+  return (
+    <div className="auth-container">
+      {view === "login" ? <Login /> : <Register />}
 
-    return (
-        <div className="auth-container">
-            <h2>{isLogin ? 'Login' : 'Register'}</h2>
-            <form onSubmit={handleSubmit} className="auth-form">
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
-                <button type="submit">
-                    {isLogin ? 'Login' : 'Register'}
-                </button>
-            </form>
-            <div className="auth-toggle">
-                <button
-                    type="button"
-                    onClick={() => setIsLogin(!isLogin)}
-                >
-                    {isLogin ? 'Need to register?' : 'Already have an account?'}
-                </button>
-            </div>
-        </div>
-    );
+      <div className="auth-toggle">
+        {view === "login" ? (
+          <p>
+            Don't have an account?{" "}
+            <button
+              className="link-button"
+              onClick={() => setView("register")}
+            >
+              Register now
+            </button>
+          </p>
+        ) : (
+          <p>
+            Already have an account?{" "}
+            <button
+              className="link-button"
+              onClick={() => setView("login")}
+            >
+              Login
+            </button>
+          </p>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default AuthContainer;`;
 
   await fs.writeFile(path.join(authPath, 'AuthContainer.tsx'), authContainerContent);
 
-  // Create Weather.tsx if weather feature is included
-  if (features.includes('weather')) {
-    const weatherContent = `import { useState, useEffect } from 'react';
-import { useAuth } from '../App';
+  // Create Login.tsx
+  const loginContent = `import { useState } from "react";
+import {useAuth} from "../App.tsx";
 
-interface WeatherForecast {
-    date: string;
-    temperatureC: number;
-    temperatureF: number;
-    summary: string;
-}
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = await login(email, password);
+      if (response.error) {
+        setError("An error happened during the login.");
+      }
+    }
+    finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="login-container">
+      <h2>Login</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        {error && <div className="error-message">{error}</div>}
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Logging in..." : "Login"}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default Login;`;
+
+  await fs.writeFile(path.join(authPath, 'Login.tsx'), loginContent);
+
+  // Create Register.tsx
+  const registerContent = `import { useState } from "react";
+import {useAuth} from "../App.tsx";
+
+const Register = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { register, login } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await register(email, password);
+      if (response.error) {
+        setError("An error happened during the register.");
+      } else {
+        await login(email, password);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="register-container">
+      <h2>Register</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        {error && <div className="error-message">{error}</div>}
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Registering..." : "Register"}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default Register;`;
+
+  await fs.writeFile(path.join(authPath, 'Register.tsx'), registerContent);
+
+  // Create Weather.tsx
+  const weatherContent = `import { useEffect, useState } from "react";
+import { type WeatherForecastReadable, WeatherForecast } from "../generated/client";
+import "../App.css";
+import { useAuth } from "../App.tsx";
 
 const Weather = () => {
-    const [forecasts, setForecasts] = useState<WeatherForecast[]>([]);
-    const [loading, setLoading] = useState(true);
-    const { logout } = useAuth();
+  const [weather, setWeather] = useState<WeatherForecastReadable[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { state, logout } = useAuth();
 
-    useEffect(() => {
-        fetch('/weatherforecast')
-            .then(response => response.json())
-            .then(data => {
-                setForecasts(data);
-                setLoading(false);
-            })
-            .catch(error => {
-                console.error('Error fetching weather data:', error);
-                setLoading(false);
-            });
-    }, []);
+  useEffect(() => {
+    if (state.isAuthenticated) {
+      setLoading(true);
+      WeatherForecast.getWeatherForecast().then(x => {
+        if (x.error) {
+          console.log(x.error);
+        } else if (x.data) {
+          setWeather(x.data);
+        }
+        setLoading(false);
+      });
+    }
+  }, [state.isAuthenticated]);
 
-    return (
-        <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h2>Weather Forecast</h2>
-                <button onClick={logout}>Logout</button>
-            </div>
-            {loading ? (
-                <p>Loading weather data...</p>
-            ) : (
-                <div className="weather-container">
-                    {forecasts.map((forecast, index) => (
-                        <div key={index} className="weather-card">
-                            <h3>{forecast.date}</h3>
-                            <p>Temperature: {forecast.temperatureC}°C ({forecast.temperatureF}°F)</p>
-                            <p>Summary: {forecast.summary}</p>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
+  if (loading) {
+    return <div style={{ color: "#333333" }}>Loading weather data...</div>;
+  }
+
+  return (
+    <div className="weather-container" style={{ color: "#333333" }}>
+      <h2 style={{ color: "#333333" }}>Weather Forecast</h2>
+
+      <div className="user-info">
+        <h3 style={{ color: "#333333" }}>User Information</h3>
+        <p><strong style={{ color: "#333333" }}>Email:</strong> <span style={{ color: "#333333" }}>{state.user?.email}</span></p>
+        <p><strong style={{ color: "#333333" }}>Email Confirmed:</strong> <span style={{ color: "#333333" }}>{state.user?.isEmailConfirmed ? "Yes" : "No"}</span></p>
+      </div>
+
+      {weather.length > 0 ? (
+        <table className="weather-table">
+          <thead>
+            <tr>
+              <th style={{ color: "#333333" }}>Date</th>
+              <th style={{ color: "#333333" }}>Summary</th>
+              <th style={{ color: "#333333" }}>Temp (C)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {weather.map(x => (
+              <tr key={x.date}>
+                <td style={{ color: "#333333" }}>{x.date}</td>
+                <td style={{ color: "#333333" }}>{x.summary || "-"}</td>
+                <td style={{ color: "#333333" }}>{x.temperatureC}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p style={{ color: "#333333" }}>No weather data available</p>
+      )}
+
+      <button className="logout-button" onClick={logout}>
+        Logout
+      </button>
+    </div>
+  );
 };
 
 export default Weather;`;
 
-    await fs.writeFile(path.join(authPath, 'Weather.tsx'), weatherContent);
-  }
+  await fs.writeFile(path.join(authPath, 'Weather.tsx'), weatherContent);
 }
 
 async function createPublicFiles(frontendPath: string): Promise<void> {
@@ -627,4 +875,43 @@ export default tseslint.config(
 )`;
 
   await fs.writeFile(path.join(frontendPath, 'eslint.config.js'), eslintConfigContent);
+}
+
+async function createVSCodeConfig(frontendPath: string): Promise<void> {
+  const vscodePath = path.join(frontendPath, '.vscode');
+  await fs.ensureDir(vscodePath);
+
+  const launchJsonContent = `{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "edge",
+      "request": "launch",
+      "name": "localhost (Edge)",
+      "url": "http://localhost:5173",
+      "webRoot": "\${workspaceFolder}"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "localhost (Chrome)",
+      "url": "http://localhost:5173",
+      "webRoot": "\${workspaceFolder}"
+    }
+  ]
+}`;
+
+  await fs.writeFile(path.join(vscodePath, 'launch.json'), launchJsonContent);
+}
+
+async function createEnvironmentFiles(frontendPath: string, docker: boolean): Promise<void> {
+  // Always create .env.development
+  const envDevelopmentContent = `VITE_API_BASE_URL=http://localhost:5226`;
+  await fs.writeFile(path.join(frontendPath, '.env.development'), envDevelopmentContent);
+
+  // Only create .env when docker option is enabled
+  if (docker) {
+    const envContent = `VITE_API_BASE_URL=ZEST_API_BASE_URL`;
+    await fs.writeFile(path.join(frontendPath, '.env'), envContent);
+  }
 }
