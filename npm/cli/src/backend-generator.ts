@@ -21,18 +21,6 @@ export async function createBackendFiles(projectPath: string, options: ProjectOp
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="..\\frontend\\.vscode\\launch.json" />
-    </ItemGroup>
-
-    <ItemGroup>
-		    <Content Include="..\\frontend\\${projectName.toLowerCase()}.frontend.esproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\\frontend\\${projectName.toLowerCase()}.frontend.esproj" />
-    </ItemGroup>
-
-    <ItemGroup>
 		    <PackageReference Include="LudovikAllen.Zest" Version="0.0.2" />
       ${database === 'inmemory' ? ' <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />' :
       database === 'sqlite' ? ' <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />' :
@@ -46,6 +34,7 @@ export async function createBackendFiles(projectPath: string, options: ProjectOp
 
   // Create Program.cs
   const programContent = `using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 using Zest;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -177,6 +166,9 @@ public class WeatherForecast
   },
   "Cors": {
     "AllowedOrigins": ["http://localhost:5173"]
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=${projectName.toLowerCase()};Username=postgres;Password=postgres"
   }
 }`;
 
@@ -235,11 +227,11 @@ EndGlobal
 function getAuthLine(useAuth: boolean, database: string, projectName: string): string | false {
   if (useAuth) {
     if (database === 'inmemory') {
-      return 'builder.Services.AddZestAuth(options => options.UseInMemoryDatabase("' + projectName + '"));';
+      return 'builder.Services.AddZestAuth(options => options.UseInMemoryDatabase(Assembly.GetExecutingAssembly().GetName().Name));';
     } else if (database === 'sqlite') {
-      return 'builder.Services.AddZestAuth(options => options.UseSqliteDatabase("Data Source=' + projectName + '.db", b => b.MigrationsAssembly("' + projectName.toLowerCase() + '"));';
+      return 'builder.Services.AddZestAuth(options => options.UseSqliteDatabase("Data Source=' + projectName + '.db", b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name));';
     } else if (database === 'postgresql') {
-      return 'builder.Services.AddZestAuth(options => options.UseNpgsql("Host=localhost;Port=5432;Database=' + projectName.toLowerCase() + ';Username=postgres;Password=postgres", b => b.MigrationsAssembly("' + projectName + '")));';
+      return 'builder.Services.AddZestAuth(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)));';
     }
   }
 

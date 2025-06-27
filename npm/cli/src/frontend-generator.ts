@@ -46,9 +46,11 @@ export async function createFrontendFiles(projectPath: string, options: ProjectO
   );
 
   // Create esproj file
-  const esprojContent = `<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.586930">
+  const esprojContent = `<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.3260360">
     <PropertyGroup>
         <StartupCommand>${packageManager} run dev</StartupCommand>
+        <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
+        <ShouldRunBuildScript>false</ShouldRunBuildScript>
     </PropertyGroup>
 </Project>`;
 
@@ -121,8 +123,6 @@ async function createTypeScriptConfigs(frontendPath: string): Promise<void> {
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"]
@@ -146,8 +146,6 @@ async function createTypeScriptConfigs(frontendPath: string): Promise<void> {
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
   "include": ["vite.config.ts"]
@@ -795,12 +793,6 @@ const Weather = () => {
   return (
     <div className="weather-container" style={{ color: "#333333" }}>
       <h2 style={{ color: "#333333" }}>Weather Forecast</h2>
-
-      <div className="user-info">
-        <h3 style={{ color: "#333333" }}>User Information</h3>
-        <p><strong style={{ color: "#333333" }}>Email:</strong> <span style={{ color: "#333333" }}>{state.user?.email}</span></p>
-        <p><strong style={{ color: "#333333" }}>Email Confirmed:</strong> <span style={{ color: "#333333" }}>{state.user?.isEmailConfirmed ? "Yes" : "No"}</span></p>
-      </div>
 
       {weather.length > 0 ? (
         <table className="weather-table">

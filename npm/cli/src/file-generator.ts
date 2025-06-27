@@ -95,7 +95,7 @@ ${projectName}/
 │   ├── Properties/       # Launch settings
 │   ├── Program.cs        # Application entry point
 │   ├── ${projectName}.csproj
-│   └── appsettings.json${options.database === 'postgresql' ? '\n├── dev/                  # PostgreSQL development setup' : ''}
+│   └── appsettings.json${options.database === 'postgresql' ? '\n├── dev/                  # PostgreSQL development setup' : ''}${docker ? '\n├── docker/               # Docker configuration\n│   ├── Dockerfile\n│   ├── docker-compose.yml\n│   └── templates/        # Nginx configuration templates' : ''}
 ├── frontend/             # React frontend
 │   ├── src/
 │   │   ├── auth/        # Authentication components
@@ -210,52 +210,179 @@ playwright-report/
 }
 
 async function createDockerFiles(projectPath: string, projectName: string): Promise<void> {
-  const dockerfileContent = `FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+  const dockerPath = path.join(projectPath, 'docker');
+  await fs.ensureDir(dockerPath);
+  const lowerCaseProjectName = projectName.toLowerCase();
 
-FROM node:18-alpine AS frontend-build
-WORKDIR /src/frontend
-COPY frontend/package*.json ./
-RUN npm ci
+  await createNginxTemplate(dockerPath);
+
+  const dockerfileContent = `# Base build stage
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS ${lowerCaseProjectName}-base
+WORKDIR /app
+
+# Install Node.js
+RUN apt-get update && apt-get install -y curl
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+RUN apt-get install -y nodejs
+
+FROM ${lowerCaseProjectName}-base AS backend-build
+WORKDIR /app
+
+# Copy backend source files
+COPY backend/ ./backend/
+# Copy frontend files that backend references during build
+COPY frontend/ ./frontend/
+
+WORKDIR /app/backend
+
+# Restore and publish the application without frontend project reference
+RUN dotnet restore ${projectName}.csproj
+RUN dotnet publish ${projectName}.csproj -c Release -o /app/publish
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 as backend
+WORKDIR /app
+
+# Copy the published application
+COPY --from=backend-build /app/publish .
+
+# Expose the port
+EXPOSE 8080
+
+# Create a non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN chown -R appuser:appuser /app
+USER appuser
+
+ENTRYPOINT ["dotnet", "${projectName}.dll"]
+
+# Use the base image with all dependencies built and TypeScript client generated
+FROM ${lowerCaseProjectName}-base AS frontend-build
+WORKDIR /app
+
+# Create frontend structure and copy generated files if they exist
+RUN mkdir -p ./frontend/src/generated
+# Note: Copy generated files from backend build if they exist
+# This step may fail if no generated files exist, which is OK for initial builds
+
+# Copy frontend package files first for better layer caching
+COPY frontend/package*.json ./frontend/
+
+# Install dependencies
+WORKDIR /app/frontend
+RUN npm install
+
+# Copy rest of frontend source
 COPY frontend/ ./
+
+# Make sure we're in the frontend directory and build the application
+WORKDIR /app/frontend
 RUN npm run build
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /src
-COPY backend/*.csproj ./backend/
-RUN cd backend && dotnet restore
-COPY backend/ ./backend/
-COPY --from=frontend-build /src/frontend/dist ./frontend/dist
-RUN cd backend && dotnet build -c Release -o /app/build
+# Production stage - nginx with built static files
+FROM nginx:alpine AS frontend
+WORKDIR /usr/share/nginx/html
 
-FROM build AS publish
-RUN cd backend && dotnet publish -c Release -o /app/publish
+# Remove default nginx static assets
+RUN rm -rf ./*
 
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "${projectName}.dll"]`;
+# Copy built frontend from build stage
+COPY --from=frontend-build /app/frontend/dist .
 
-  await fs.writeFile(path.join(projectPath, 'Dockerfile'), dockerfileContent);
+RUN mkdir -p /var/cache/nginx/client_temp && \
+    mkdir -p /var/run/nginx && \
+    touch /var/run/nginx/nginx.pid && \
+    touch /run/nginx.pid
+
+# Set permissions for nginx user
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+    chown -R nginx:nginx /var/cache/nginx && \
+    chown -R nginx:nginx /var/log/nginx && \
+    chown -R nginx:nginx /etc/nginx/conf.d && \
+    chown -R nginx:nginx /var/run/nginx && \
+    chown -R nginx:nginx /run/nginx.pid && \
+    chown -R nginx:nginx /var/run/nginx/nginx.pid
+
+# Create the runtime injection script directly in the container
+RUN mkdir -p /docker-entrypoint.d
+
+# Create env.sh script for environment variable replacement
+RUN cat <<'EOF' > /docker-entrypoint.d/env.sh
+set -e
+
+# Display the current directory being scanned
+echo "Scanning directory: /usr/share/nginx/html"
+
+# Iterate through each environment variable that starts with ZEST_
+env | grep "^ZEST_" | while IFS='=' read -r key value; do
+    echo "  • Replacing \${key} → \${value}"
+    find "/usr/share/nginx/html" -type f \
+        -exec sed -i "s|\${key}|\${value}|g" {} +
+done
+EOF
+
+RUN dos2unix /docker-entrypoint.d/env.sh
+RUN chmod +x /docker-entrypoint.d/env.sh
+
+# Expose port 80
+EXPOSE 80
+
+# Use nginx user
+USER nginx
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]`;
+
+  await fs.writeFile(path.join(dockerPath, 'Dockerfile'), dockerfileContent);
 
   const dockerComposeContent = `version: '3.8'
 
 services:
-  ${projectName.toLowerCase()}:
-    build: .
-    ports:
-      - "8080:8080"
-      - "8081:8081"
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: backend
+    container_name: ${projectName.toLowerCase()}-backend
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:8081;http://+:8080
-    volumes:
-      - ~/.aspnet/https:/root/.aspnet/https:ro
-      - ~/.microsoft/usersecrets:/root/.microsoft/usersecrets:ro`;
+      BACKEND_PORT: \${BACKEND_PORT:-8080}
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:\${BACKEND_PORT:-8080}
+      ConnectionStrings__DefaultConnection: \${DATABASE_CONNECTION_STRING:-}
+      Cors__AllowedOrigins__0: \${BASE_URL:-http://localhost}
+      Cors__AllowedOrigins__1: \${BASE_URL:-http://localhost}:\${NGINX_LISTEN_PORT:-80}
+    ports:
+      - "\${BACKEND_PORT:-8080}:\${BACKEND_PORT:-8080}"
+    networks:
+      - ${projectName.toLowerCase()}-network
 
-  await fs.writeFile(path.join(projectPath, 'docker-compose.yml'), dockerComposeContent);
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: frontend
+    container_name: ${projectName.toLowerCase()}-frontend
+    environment:
+      BASE_URL: \${BASE_URL:-http://localhost}
+      BACKEND_PORT: \${BACKEND_PORT:-8080}
+      NGINX_API_PATH_SEGMENT: \${NGINX_API_PATH_SEGMENT:-api}
+      ZEST_API_BASE_URL: \${ZEST_API_BASE_URL:-\${BASE_URL:-http://localhost}/\${NGINX_API_PATH_SEGMENT:-api}}
+      NGINX_LISTEN_PORT: \${NGINX_LISTEN_PORT:-80}
+    ports:
+      - "\${NGINX_LISTEN_PORT:-80}:\${NGINX_LISTEN_PORT:-80}"
+    networks:
+      - ${projectName.toLowerCase()}-network
+    volumes:
+      - ./templates:/etc/nginx/templates
+
+networks:
+  ${projectName.toLowerCase()}-network:
+    driver: bridge
+
+volumes:
+  nginx-cache:
+  nginx-logs:`;
+
+  await fs.writeFile(path.join(dockerPath, 'docker-compose.yml'), dockerComposeContent);
 }
 
 async function createDevPostgreSQLFiles(projectPath: string, projectName: string): Promise<void> {
@@ -324,4 +451,71 @@ postgres://postgres:postgres@localhost:5432/${projectName.toLowerCase()}
 `;
 
   await fs.writeFile(path.join(devPath, 'README.md'), devReadmeContent);
+}
+
+async function createNginxTemplate(dockerPath: string): Promise<void> {
+  const templatesPath = path.join(dockerPath, 'templates');
+  await fs.ensureDir(templatesPath);
+
+  const nginxTemplateContent = `# Upstream backend server
+upstream backend {
+    server backend:\${BACKEND_PORT};
+}
+
+server {
+    listen \${NGINX_LISTEN_PORT};
+    server_name localhost;
+    
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
+    
+    # Root location for React app
+    location / {
+        root /usr/share/nginx/html;
+        index index.html index.htm;
+        try_files $uri $uri/ /index.html;
+        
+        # Cache static assets
+        location ~* \\.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+    }
+
+    location = /\${NGINX_API_PATH_SEGMENT} {
+        return 302 /\${NGINX_API_PATH_SEGMENT}/;
+    }
+    
+    # API proxy to backend
+    location /\${NGINX_API_PATH_SEGMENT}/ {
+        proxy_pass http://backend/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # Enable CORS for API requests
+        add_header 'Access-Control-Allow-Origin' '*' always;
+        add_header 'Access-Control-Allow-Credentials' 'true' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+        add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
+        
+        # Handle preflight requests
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS';
+            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization';
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain; charset=utf-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+    }
+}`;
+
+  await fs.writeFile(path.join(templatesPath, 'default.conf.template'), nginxTemplateContent);
 }

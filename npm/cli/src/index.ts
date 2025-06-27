@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { input, select, confirm, checkbox } from '@inquirer/prompts';
+import { input, select, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
@@ -9,6 +9,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import ora from 'ora';
 import type { ProjectOptions } from './types.js';
 import { createBackendFiles } from './backend-generator.js';
 import { createFrontendFiles } from './frontend-generator.js';
@@ -17,6 +18,23 @@ import { createAdditionalFiles } from './file-generator.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const execAsync = promisify(exec);
+
+// Helper function to execute commands with spinner
+async function execWithSpinner(message: string, command: string, options: any = {}) {
+  const spinner = ora(message).start();
+  try {
+    const result = await execAsync(command, {
+      cwd: process.cwd(),
+      shell: 'pwsh.exe',
+      ...options
+    });
+    spinner.succeed(message.replace(/\.\.\.$/, '') + ' completed');
+    return result;
+  } catch (error) {
+    spinner.fail(message.replace(/\.\.\.$/, '') + ' failed');
+    throw error;
+  }
+}
 
 async function main() {
   console.log(chalk.blue.bold('🚀 Welcome to create-zest!'));
@@ -85,12 +103,17 @@ async function main() {
     packageManager,
     runSetup,
   };
+  console.log("")
 
-  console.log(chalk.blue('\n✨ Creating your Zest application...'));
-
-  await createProject(options);
-
-  console.log(chalk.green.bold('🎉 Project created successfully!\n'));
+  // Create project with spinner
+  const projectSpinner = ora('Creating your Zest application...').start();
+  try {
+    await createProject(options);
+    projectSpinner.succeed('Project created successfully!');
+  } catch (error) {
+    projectSpinner.fail('Failed to create project');
+    throw error;
+  }
 
   // Build the command string
   const currentDir = process.cwd();
@@ -119,66 +142,52 @@ async function main() {
   if (options.runSetup) {    
     try {
       // Step 1: Install frontend dependencies
-      console.log(chalk.blue('📦 Installing frontend dependencies...'));
-      await execAsync(`cd ${path.join(projectPath, 'frontend')} && ${options.packageManager} install`, {
-        cwd: process.cwd(),
-        shell: 'pwsh.exe'
-      });
-      console.log(chalk.green('✅ Frontend dependencies installed\n'));
+      await execWithSpinner(
+        'Installing frontend dependencies...',
+        `cd ${path.join(projectPath, 'frontend')} && ${options.packageManager} install`
+      );
 
       if (options.database !== 'inmemory') {
         // Step 2: Start Docker services
-        console.log(chalk.blue('🐳 Starting Docker services...'));
-        await execAsync(`cd ${path.join(projectPath, 'dev')} && docker compose up -d`, {
-          cwd: process.cwd(),
-          shell: 'pwsh.exe'
-        });
-        console.log(chalk.green('✅ Docker services started\n'));
+        await execWithSpinner(
+          'Starting Docker services...',
+          `cd ${path.join(projectPath, 'dev')} && docker compose up -d`
+        );
 
         // Step 3: Restore .NET packages
-        console.log(chalk.blue('📦 Restoring .NET packages...'));
-        await execAsync(`cd ${path.join(projectPath, 'backend')} && dotnet restore`, {
-          cwd: process.cwd(),
-          shell: 'pwsh.exe'
-        });
-        console.log(chalk.green('✅ .NET packages restored\n'));
+        await execWithSpinner(
+          'Restoring .NET packages...',
+          `cd ${path.join(projectPath, 'backend')} && dotnet restore`
+        );
 
         // Step 4: Install Entity Framework tools
-        console.log(chalk.blue('🛠️ Installing Entity Framework tools...'));
-        await execAsync('dotnet tool install --global dotnet-ef', {
-          cwd: process.cwd(),
-          shell: 'pwsh.exe'
-        });
-        console.log(chalk.green('✅ Entity Framework tools installed\n'));
+        await execWithSpinner(
+          'Installing Entity Framework tools...',
+          'dotnet tool install --global dotnet-ef'
+        );
 
         // Step 5: Create initial migration
-        console.log(chalk.blue('🗄️ Creating initial database migration...'));
-        await execAsync(`cd ${path.join(projectPath, 'backend')} && dotnet ef migrations add InitialCreate`, {
-          cwd: process.cwd(),
-          shell: 'pwsh.exe'
-        });
-        console.log(chalk.green('✅ Initial migration created\n'));
+        await execWithSpinner(
+          'Creating initial database migration...',
+          `cd ${path.join(projectPath, 'backend')} && dotnet ef migrations add InitialCreate`
+        );
 
         // Step 6: Update database
-        console.log(chalk.blue('🗄️ Updating database...'));
-        await execAsync(`cd ${path.join(projectPath, 'backend')} && dotnet ef database update`, {
-          cwd: process.cwd(),
-          shell: 'pwsh.exe'
-        });
-        console.log(chalk.green('✅ Database updated\n'));
+        await execWithSpinner(
+          'Updating database...',
+          `cd ${path.join(projectPath, 'backend')} && dotnet ef database update`
+        );
       } else {
         // For in-memory database, just restore .NET packages
-        console.log(chalk.blue('📦 Restoring .NET packages...'));
-        await execAsync(`cd ${path.join(projectPath, 'backend')} && dotnet restore`, {
-          cwd: process.cwd(),
-          shell: 'pwsh.exe'
-        });
-        console.log(chalk.green('✅ .NET packages restored\n'));
+        await execWithSpinner(
+          'Restoring .NET packages...',
+          `cd ${path.join(projectPath, 'backend')} && dotnet restore`
+        );
       }
       
-      console.log(chalk.green.bold('🎉 Setup completed successfully!\n'));
+      console.log(chalk.green.bold('\n🎉 Setup completed successfully!\n'));
     } catch (error) {
-      console.error(chalk.red('❌ Error running setup commands:'));
+      console.error(chalk.red('\n❌ Error running setup commands:'));
       console.error(chalk.red(error instanceof Error ? error.message : String(error)));
       console.log(chalk.yellow('\nYou can run the commands manually:'));
       console.log(chalk.cyan(`  ${commandString}\n`));
