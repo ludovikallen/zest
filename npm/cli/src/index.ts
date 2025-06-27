@@ -19,96 +19,75 @@ const __dirname = path.dirname(__filename);
 const execAsync = promisify(exec);
 
 async function main() {
-  console.log(chalk.blue.bold('\n🚀 Welcome to create-zest!\n'));
+  console.log(chalk.blue.bold('🚀 Welcome to create-zest!'));
   console.log(chalk.gray('Create a new Zest application with .NET backend and React frontend.\n'));
 
   const argv = await yargs(hideBin(process.argv))
-    .option('name', {
-      alias: 'n',
-      type: 'string',
-      description: 'Project name',
-    })
-    .option('yes', {
-      alias: 'y',
-      type: 'boolean',
-      description: 'Use default options',
-      default: false,
-    })
     .help()
     .argv;
 
   let options: ProjectOptions;
 
-  if (argv.yes) {
-    options = {
-      projectName: argv.name || 'my-zest-app',
-      useAuth: true,
-      docker: true,
-      database: 'postgresql',
-      packageManager: 'npm',
-      runSetup: false,
-    };
-  } else {
-    const projectName = argv.name || await input({
-      message: 'What is your project name?',
-      default: 'my-zest-app',
-      validate: (input: string) => {
-        if (!input || input.trim().length === 0) {
-          return 'Project name is required';
-        }
-        if (!/^[a-zA-Z0-9-_]+$/.test(input)) {
-          return 'Project name can only contain letters, numbers, hyphens, and underscores';
-        }
-        return true;
-      },
-    });
+  const projectName = await input({
+    message: 'What is your project name?',
+    default: 'MyZestApp',
+    validate: (input: string) => {
+      if (!input || input.trim().length === 0) {
+        return 'Project name is required';
+      }
+      if (!/^[A-Z][a-zA-Z]*$/.test(input)) {
+        return 'Project name can only contain letters and must be in CamelCase (e.g., MyZestApp)';
+      }
+      return true;
+    },
+  });
 
-    const useAuth = await confirm({
-      message: 'Do you want to include authentication?',
-      default: true,
-    });
+  const useAuth = await confirm({
+    message: 'Do you want to include authentication?',
+    default: true,
+  });
 
-    const docker = await confirm({
-      message: 'Do you want to include Docker files to deploy?',
-      default: true,
-    });
-        
-    const database = await select({
-      message: 'Select database:',
-      choices: [
-        { name: 'postgresql', value: 'postgresql' as const },
-        { name: 'in-memory', value: 'inmemory' as const },
-        { name: 'sqlite', value: 'sqlite' as const },
-      ],
-      default: 'postgresql',
-    });
+  const docker = await confirm({
+    message: 'Do you want to include Docker files to deploy?',
+    default: true,
+  });
+      
+  const database = await select({
+    message: 'Select database:',
+    choices: [
+      { name: 'postgresql', value: 'postgresql' as const },
+      { name: 'in-memory', value: 'inmemory' as const },
+      { name: 'sqlite', value: 'sqlite' as const },
+    ],
+    default: 'postgresql',
+  });
 
-    const packageManager = await select({
-      message: 'Select package manager:',
-      choices: [
-        { name: 'npm', value: 'npm' as const },
-        { name: 'yarn', value: 'yarn' as const },
-        { name: 'pnpm', value: 'pnpm' as const },
-      ],
-      default: 'npm',
-    });
+  const packageManager = await select({
+    message: 'Select package manager:',
+    choices: [
+      { name: 'npm', value: 'npm' as const },
+      { name: 'yarn', value: 'yarn' as const },
+      { name: 'pnpm', value: 'pnpm' as const },
+    ],
+    default: 'npm',
+  });
 
-    const runSetup = await confirm({
-      message: 'Do you want to automatically run the setup commands after project creation?',
-      default: false,
-    });
+  const runSetup = await confirm({
+    message: 'Do you want to automatically run the setup commands after project creation?',
+    default: true,
+  });
 
-    options = {
-      projectName: projectName.trim(),
-      useAuth,
-      docker,
-      database,
-      packageManager,
-      runSetup,
-    };
-  }
+  options = {
+    projectName: projectName.trim(),
+    useAuth,
+    docker,
+    database,
+    packageManager,
+    runSetup,
+  };
+  
 
-  console.log(chalk.green('\n✨ Creating your Zest application...'));
+  console.log(chalk.blue('\n✨ Creating your Zest application...'));
 
   await createProject(options);
 
