@@ -85,7 +85,6 @@ async function main() {
     packageManager,
     runSetup,
   };
-  
 
   console.log(chalk.blue('\n✨ Creating your Zest application...'));
 
@@ -104,13 +103,15 @@ async function main() {
       'cd dev',
       'docker compose up -d',
       'cd ..',
+      'cd backend',
       'dotnet restore',
       'dotnet tool install --global dotnet-ef',
       'dotnet ef migrations add InitialCreate',
-      'dotnet ef database update'
+      'dotnet ef database update',
+      'cd ..'
     );
   } else {
-    setupCommands.push('dotnet restore');
+    setupCommands.push('cd backend', 'dotnet restore', 'cd ..');
   }
     
   const commandString = setupCommands.join(' && ');
@@ -136,7 +137,7 @@ async function main() {
 
         // Step 3: Restore .NET packages
         console.log(chalk.blue('📦 Restoring .NET packages...'));
-        await execAsync(`cd ${projectPath} && dotnet restore`, {
+        await execAsync(`cd ${path.join(projectPath, 'backend')} && dotnet restore`, {
           cwd: process.cwd(),
           shell: 'pwsh.exe'
         });
@@ -152,7 +153,7 @@ async function main() {
 
         // Step 5: Create initial migration
         console.log(chalk.blue('🗄️ Creating initial database migration...'));
-        await execAsync(`cd ${projectPath} && dotnet ef migrations add InitialCreate`, {
+        await execAsync(`cd ${path.join(projectPath, 'backend')} && dotnet ef migrations add InitialCreate`, {
           cwd: process.cwd(),
           shell: 'pwsh.exe'
         });
@@ -160,7 +161,7 @@ async function main() {
 
         // Step 6: Update database
         console.log(chalk.blue('🗄️ Updating database...'));
-        await execAsync(`cd ${projectPath} && dotnet ef database update`, {
+        await execAsync(`cd ${path.join(projectPath, 'backend')} && dotnet ef database update`, {
           cwd: process.cwd(),
           shell: 'pwsh.exe'
         });
@@ -168,7 +169,7 @@ async function main() {
       } else {
         // For in-memory database, just restore .NET packages
         console.log(chalk.blue('📦 Restoring .NET packages...'));
-        await execAsync(`cd ${projectPath} && dotnet restore`, {
+        await execAsync(`cd ${path.join(projectPath, 'backend')} && dotnet restore`, {
           cwd: process.cwd(),
           shell: 'pwsh.exe'
         });

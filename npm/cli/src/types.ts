@@ -6,8 +6,3 @@ export interface ProjectOptions {
   packageManager: 'npm' | 'yarn' | 'pnpm';
   runSetup?: boolean;
 }
-
-export interface DotNetVersionChoice {
-  name: string;
-  value: string;
-}

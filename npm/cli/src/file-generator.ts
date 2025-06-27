@@ -46,15 +46,18 @@ ${docker ? '- ✅ Docker Support' : '- ❌ Docker Support'}
 ### Installation
 
 1. Clone this repository
-${options.database === 'postgresql' ? '2. Start the PostgreSQL database:\n   ```\n   cd dev\n   docker compose up -d\n cd ..\n   ```\n\n3' : '2'}. Install .NET dependencies:
+${options.database === 'postgresql' ? '2. Start the PostgreSQL database:\n   ```\n   cd dev\n   docker compose up -d\n   cd ..\n   ```\n\n3' : '2'}. Install .NET dependencies:
    \`\`\`
+   cd backend
    dotnet restore
+   cd ..
    \`\`\`
 
 ${options.database === 'postgresql' ? '4' : '3'}. Install frontend dependencies:
    \`\`\`
    cd frontend
    ${options.packageManager} install
+   cd ..
    \`\`\`
 
 ### Running the Application
@@ -63,6 +66,7 @@ ${options.database === 'postgresql' ? '4' : '3'}. Install frontend dependencies:
 
 1. Start the backend:
    \`\`\`
+   cd backend
    dotnet run
    \`\`\`
 
@@ -86,7 +90,12 @@ The application will be available at:
 
 \`\`\`
 ${projectName}/
-├── Controllers/           # API Controllers${options.database === 'postgresql' ? '\n├── dev/                  # PostgreSQL development setup' : ''}
+├── backend/              # .NET backend
+│   ├── Controllers/      # API Controllers
+│   ├── Properties/       # Launch settings
+│   ├── Program.cs        # Application entry point
+│   ├── ${projectName}.csproj
+│   └── appsettings.json${options.database === 'postgresql' ? '\n├── dev/                  # PostgreSQL development setup' : ''}
 ├── frontend/             # React frontend
 │   ├── src/
 │   │   ├── auth/        # Authentication components
@@ -94,9 +103,6 @@ ${projectName}/
 │   │   └── main.tsx     # App entry point
 │   ├── package.json
 │   └── vite.config.ts
-├── Properties/
-├── Program.cs           # Application entry point
-├── ${projectName}.csproj
 ├── ${projectName}.sln   # Solution file (bundles frontend & backend)
 └── README.md
 \`\`\`
@@ -116,13 +122,14 @@ ${projectName}/
 async function createGitignore(projectPath: string): Promise<void> {
   const gitignoreContent = `# Dependencies
 node_modules/
-*/node_modules/
+**/node_modules/
 
 # Build outputs
-bin/
-obj/
-dist/
-build/
+**/bin/
+**/obj/
+**/dist/
+**/build/
+**/generated/
 
 # Environment files
 .env
@@ -217,14 +224,14 @@ RUN npm run build
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY *.csproj ./
-RUN dotnet restore
-COPY . .
+COPY backend/*.csproj ./backend/
+RUN cd backend && dotnet restore
+COPY backend/ ./backend/
 COPY --from=frontend-build /src/frontend/dist ./frontend/dist
-RUN dotnet build -c Release -o /app/build
+RUN cd backend && dotnet build -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish -c Release -o /app/publish
+RUN cd backend && dotnet publish -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app

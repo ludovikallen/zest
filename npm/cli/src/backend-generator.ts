@@ -5,6 +5,10 @@ import { randomUUID } from 'crypto';
 
 export async function createBackendFiles(projectPath: string, options: ProjectOptions): Promise<void> {
   const { projectName, database, useAuth } = options;
+  const backendPath = path.join(projectPath, 'backend');
+  
+  // Create backend directory
+  await fs.ensureDir(backendPath);
 
   // Create .csproj file
   const csprojContent = `<Project ToolsVersion="17.0" Sdk="Microsoft.NET.Sdk.Web">
@@ -13,19 +17,19 @@ export async function createBackendFiles(projectPath: string, options: ProjectOp
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <FrontendSourcePath>$(MSBuildProjectDirectory)\\frontend\\src</FrontendSourcePath>
+        <FrontendSourcePath>$(MSBuildProjectDirectory)\\..\\frontend\\src</FrontendSourcePath>
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="frontend\\.vscode\\launch.json" />
+        <Content Include="..\\frontend\\.vscode\\launch.json" />
     </ItemGroup>
 
     <ItemGroup>
-		    <Content Include="frontend\\${projectName.toLowerCase()}.client.esproj" />
+		    <Content Include="..\\frontend\\${projectName.toLowerCase()}.frontend.esproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="frontend\\${projectName.toLowerCase()}.client.esproj" />
+        <ProjectReference Include="..\\frontend\\${projectName.toLowerCase()}.frontend.esproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -38,7 +42,7 @@ export async function createBackendFiles(projectPath: string, options: ProjectOp
 
 </Project>`;
 
-  await fs.writeFile(path.join(projectPath, `${projectName}.csproj`), csprojContent);
+  await fs.writeFile(path.join(backendPath, `${projectName}.csproj`), csprojContent);
 
   // Create Program.cs
   const programContent = `using Microsoft.EntityFrameworkCore;
@@ -67,10 +71,10 @@ app.MapControllers();
 app.Run();
 `;
 
-  await fs.writeFile(path.join(projectPath, 'Program.cs'), programContent);
+  await fs.writeFile(path.join(backendPath, 'Program.cs'), programContent);
 
   // Create Controllers directory and WeatherForecastController if weather feature is selected
-  await fs.ensureDir(path.join(projectPath, 'Controllers'));
+  await fs.ensureDir(path.join(backendPath, 'Controllers'));
     
   const weatherControllerContent = `using Microsoft.AspNetCore.Mvc;
 
@@ -106,7 +110,7 @@ public class WeatherForecastController : ControllerBase
 }
 `;
 
-  await fs.writeFile(path.join(projectPath, 'Controllers', 'WeatherForecastController.cs'), weatherControllerContent);
+  await fs.writeFile(path.join(backendPath, 'Controllers', 'WeatherForecastController.cs'), weatherControllerContent);
 
   const weatherForecastContent = `namespace ${projectName};
 
@@ -122,11 +126,11 @@ public class WeatherForecast
 }
 `;
 
-  await fs.writeFile(path.join(projectPath, 'WeatherForecast.cs'), weatherForecastContent);
+  await fs.writeFile(path.join(backendPath, 'WeatherForecast.cs'), weatherForecastContent);
   
 
   // Create Properties directory and launchSettings.json
-  await fs.ensureDir(path.join(projectPath, 'Properties'));
+  await fs.ensureDir(path.join(backendPath, 'Properties'));
   const launchSettingsContent = `{
   "profiles": {
     "http": {
@@ -152,7 +156,7 @@ public class WeatherForecast
   "$schema": "https://json.schemastore.org/launchsettings.json"
 }`;
 
-  await fs.writeFile(path.join(projectPath, 'Properties', 'launchSettings.json'), launchSettingsContent);
+  await fs.writeFile(path.join(backendPath, 'Properties', 'launchSettings.json'), launchSettingsContent);
 
   // Create appsettings files
   const appSettingsContent = `{
@@ -176,18 +180,14 @@ public class WeatherForecast
   }
 }`;
 
-  await fs.writeFile(path.join(projectPath, 'appsettings.json'), appSettingsContent);
-  await fs.writeFile(path.join(projectPath, 'appsettings.Development.json'), devAppSettingsContent);
+  await fs.writeFile(path.join(backendPath, 'appsettings.json'), appSettingsContent);
+  await fs.writeFile(path.join(backendPath, 'appsettings.Development.json'), devAppSettingsContent);
 
   // Create solution file
   await createSolutionFile(projectPath, projectName);
 
   // Create solution launch file
   await createSolutionLaunchFile(projectPath, projectName);
-
-  if (database !== 'inmemory') {
-    await createMigrationInstructions(projectPath, projectName);
-  }
 }
 
 async function createSolutionFile(projectPath: string, projectName: string): Promise<void> {
@@ -199,9 +199,9 @@ async function createSolutionFile(projectPath: string, projectName: string): Pro
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36203.30 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "${projectName}", "${projectName}.csproj", "{${backendProjectGuid}}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "${projectName}", "backend\\${projectName}.csproj", "{${backendProjectGuid}}"
 EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "${projectName.toLowerCase()}.client", "frontend\\${projectName.toLowerCase()}.client.esproj", "{${frontendProjectGuid}}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "${projectName.toLowerCase()}.frontend", "frontend\\${projectName.toLowerCase()}.frontend.esproj", "{${frontendProjectGuid}}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -252,12 +252,12 @@ async function createSolutionLaunchFile(projectPath: string, projectName: string
     "Name": "dev",
     "Projects": [
       {
-        "Path": "${projectName}.csproj",
+        "Path": "backend\\\\${projectName}.csproj",
         "Action": "Start",
         "DebugTarget": "http"
       },
       {
-        "Path": "frontend\\\\${projectName.toLowerCase()}.client.esproj",
+        "Path": "frontend\\\\${projectName.toLowerCase()}.frontend.esproj",
         "Action": "Start",
         "DebugTarget": "localhost (Chrome)"
       }
@@ -266,37 +266,4 @@ async function createSolutionLaunchFile(projectPath: string, projectName: string
 ]`;
 
   await fs.writeFile(path.join(projectPath, `${projectName}.slnLaunch`), slnLaunchContent);
-}
-
-async function createMigrationInstructions(projectPath: string, projectName: string): Promise<void> {
-  const migrationInstructions = `# Entity Framework Migration Setup
-
-This project uses PostgreSQL with Entity Framework Core. Follow these steps to set up your database:
-
-## 1. Install Entity Framework CLI Tool
-\`\`\`bash
-dotnet tool install --global dotnet-ef
-\`\`\`
-
-## 2. Create Initial Migration
-Navigate to your project directory and run:
-\`\`\`bash
-dotnet ef migrations add InitialCreate
-\`\`\`
-
-## 3. Update Database
-Apply the migration to create the database:
-\`\`\`bash
-dotnet ef database update
-\`\`\`
-
-## 4. Connection String
-Make sure your PostgreSQL server is running and update the connection string in your configuration if needed.
-Default connection string: "Host=localhost;Port=5432;Database=${projectName.toLowerCase()};Username=postgres;Password=postgres"
-
-## Note
-These commands should be run from the project root directory where the .csproj file is located.
-`;
-
-  await fs.writeFile(path.join(projectPath, 'MIGRATION_SETUP.md'), migrationInstructions);
 }
