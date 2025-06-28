@@ -21,7 +21,7 @@ function App() {
   return (
     <AuthProvider>
       <div className="app-container">
-        <h1>Weather Forecast App</h1>
+        <h1>Example App</h1>
         <AppContent />
       </div>
     </AuthProvider>

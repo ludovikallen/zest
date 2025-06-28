@@ -1,0 +1,24 @@
+{
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "launchUrl": "http://localhost:5173",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "hotReloadEnabled": true,
+      "applicationUrl": "http://localhost:5226"
+    },
+    "https": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "hotReloadEnabled": false,
+      "applicationUrl": "https://localhost:7097;http://localhost:5226"
+    }
+  },
+  "$schema": "https://json.schemastore.org/launchsettings.json"
+}

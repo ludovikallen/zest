@@ -21,11 +21,11 @@ export async function createBackendFiles(projectPath: string, options: ProjectOp
     </PropertyGroup>
 
     <ItemGroup>
-		    <PackageReference Include="LudovikAllen.Zest" Version="0.0.2" />
-      ${database === 'inmemory' ? ' <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />' :
-      database === 'sqlite' ? ' <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />' :
+		  <PackageReference Include="LudovikAllen.Zest" Version="0.0.3" />
+      ${database === 'inmemory' ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />' :
+      database === 'sqlite' ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />' :
       ' <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />'}
-      ${database === 'postgresql' ? ' <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6" />' : ''}
+      ${database !== 'inmemory' ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6" />' : ''}
     </ItemGroup>
 
 </Project>`;
@@ -39,23 +39,11 @@ using Zest;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-
-${useAuth ? getAuthLine(useAuth, database, projectName) : ''}
-
-builder.Services.AddZest();
+${getAddZestLine(useAuth, database, projectName)}
 
 var app = builder.Build();
 
-app.UseZest();
-
-${useAuth ? 'app.UseZestAuth();' : ''}
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
+${getUseZestLine(useAuth)}
 
 app.Run();
 `;
@@ -116,7 +104,8 @@ public class WeatherForecast
 `;
 
   await fs.writeFile(path.join(backendPath, 'WeatherForecast.cs'), weatherForecastContent);
-  
+
+  await createApplicationDbContext(backendPath, useAuth);
 
   // Create Properties directory and launchSettings.json
   await fs.ensureDir(path.join(backendPath, 'Properties'));
@@ -224,18 +213,51 @@ EndGlobal
   await fs.writeFile(path.join(projectPath, `${projectName}.sln`), solutionContent);
 }
 
-function getAuthLine(useAuth: boolean, database: string, projectName: string): string | false {
-  if (useAuth) {
-    if (database === 'inmemory') {
-      return 'builder.Services.AddZestAuth(options => options.UseInMemoryDatabase(Assembly.GetExecutingAssembly().GetName().Name));';
-    } else if (database === 'sqlite') {
-      return 'builder.Services.AddZestAuth(options => options.UseSqliteDatabase("Data Source=' + projectName + '.db", b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name));';
-    } else if (database === 'postgresql') {
-      return 'builder.Services.AddZestAuth(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)));';
-    }
+async function createApplicationDbContext(projectPath: string, useAuth: boolean): Promise<void> {
+  let applicationDbContexContent;
+  if (!useAuth) {
+    applicationDbContexContent = `using Microsoft.EntityFrameworkCore;
+
+internal class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+{
+}
+`
+  } else {
+    applicationDbContexContent = `using Microsoft.EntityFrameworkCore;
+using Zest;
+
+internal class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : ZestAuthDbContext<ApplicationDbContext>(options)
+{
+}
+`
   }
 
-  return false;
+    await fs.writeFile(path.join(projectPath, 'ApplicationDbContext.cs'), applicationDbContexContent);
+}
+
+function getAddZestLine(useAuth: boolean, database: string, projectName: string): string {
+  let databaseOptions;
+  if (database === 'inmemory') {
+    databaseOptions = 'options => options.UseInMemoryDatabase(Assembly.GetExecutingAssembly().GetName().Name)';
+  } else if (database === 'sqlite') {
+    databaseOptions = 'options => options.UseSqlite("Data Source=' + projectName + '.db", b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name))';
+  } else if (database === 'postgresql') {
+    databaseOptions = 'options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name))';
+  }
+
+  if (useAuth) {
+      return 'builder.Services.AddZestWithAuth<ApplicationDbContext>('+ databaseOptions +');';
+  } else {
+      return 'builder.Services.AddZest<ApplicationDbContext>('+ databaseOptions +');';
+  }
+}
+
+function getUseZestLine(useAuth: boolean): string {
+  if (useAuth) {
+    return 'app.UseZestWithAuth();';
+  } else {
+    return 'app.UseZest();';
+  }
 }
 
 async function createSolutionLaunchFile(projectPath: string, projectName: string): Promise<void> {

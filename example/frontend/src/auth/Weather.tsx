@@ -30,12 +30,6 @@ const Weather = () => {
     <div className="weather-container" style={{ color: "#333333" }}>
       <h2 style={{ color: "#333333" }}>Weather Forecast</h2>
 
-      <div className="user-info">
-        <h3 style={{ color: "#333333" }}>User Information</h3>
-        <p><strong style={{ color: "#333333" }}>Email:</strong> <span style={{ color: "#333333" }}>{state.user?.email}</span></p>
-        <p><strong style={{ color: "#333333" }}>Email Confirmed:</strong> <span style={{ color: "#333333" }}>{state.user?.isEmailConfirmed ? "Yes" : "No"}</span></p>
-      </div>
-
       {weather.length > 0 ? (
         <table className="weather-table">
           <thead>

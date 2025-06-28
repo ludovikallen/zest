@@ -42,6 +42,8 @@ async function main() {
 
   const argv = await yargs(hideBin(process.argv))
     .help()
+    .alias('h', 'help')
+    .alias('v', 'version')
     .argv;
 
   let options: ProjectOptions;
@@ -73,11 +75,11 @@ async function main() {
   const database = await select({
     message: 'Select database:',
     choices: [
-      { name: 'postgresql', value: 'postgresql' as const },
-      { name: 'in-memory', value: 'inmemory' as const },
       { name: 'sqlite', value: 'sqlite' as const },
+      { name: 'postgresql', value: 'postgresql' as const },
+      { name: 'inmemory', value: 'inmemory' as const },
     ],
-    default: 'postgresql',
+    default: 'sqlite',
   });
 
   const packageManager = await select({
@@ -120,12 +122,16 @@ async function main() {
   const projectPath = path.join(currentDir, options.projectName);
   let setupCommands = [`cd ${projectPath}`];
   setupCommands.push(`cd frontend`, `${options.packageManager} install`, `cd ..`);
-
-  if (options.database !== 'inmemory') {
+  if (options.database === 'postgresql') {
     setupCommands.push(
       'cd dev',
       'docker compose up -d',
-      'cd ..',
+      'cd ..'
+    );
+  }
+
+  if (options.database !== 'inmemory') {
+    setupCommands.push(
       'cd backend',
       'dotnet restore',
       'dotnet tool install --global dotnet-ef',
@@ -147,13 +153,15 @@ async function main() {
         `cd ${path.join(projectPath, 'frontend')} && ${options.packageManager} install`
       );
 
-      if (options.database !== 'inmemory') {
+      if (options.database === 'postgresql') {
         // Step 2: Start Docker services
         await execWithSpinner(
           'Starting Docker services...',
           `cd ${path.join(projectPath, 'dev')} && docker compose up -d`
         );
+      }
 
+      if (options.database !== 'inmemory') {
         // Step 3: Restore .NET packages
         await execWithSpinner(
           'Restoring .NET packages...',
@@ -178,7 +186,7 @@ async function main() {
           `cd ${path.join(projectPath, 'backend')} && dotnet ef database update`
         );
       } else {
-        // For in-memory database, just restore .NET packages
+        // For inmemory database, just restore .NET packages
         await execWithSpinner(
           'Restoring .NET packages...',
           `cd ${path.join(projectPath, 'backend')} && dotnet restore`
@@ -225,7 +233,12 @@ async function createProject(options: ProjectOptions) {
 }
 
 main().catch((error) => {
-  console.error(chalk.red('\n❌ Error creating project:'));
-  console.error(chalk.red(error.message));
+  if (error instanceof Error && error.name === 'ExitPromptError') {
+    console.log('👋 until next time!');
+  } else {
+    console.error(chalk.red('\n❌ Error creating project:'));
+    console.error(chalk.red(error.message));
+  }
+
   process.exit(1);
 });

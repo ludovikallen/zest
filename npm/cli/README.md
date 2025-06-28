@@ -48,12 +48,13 @@ The CLI can generate projects with the following features:
 - ✅ **TypeScript**: Type-safe development for both frontend and backend
 - ✅ **Vite**: Fast frontend build tool and dev server
 - ✅ **Weather API Example**: Sample API controller and frontend integration
+- ✅ **Entity Framework Core**: Database access with migrations
 
 ### Optional Features
 - 🔐 **Authentication**: User registration and login with Zest Auth
-- 🗄️ **Entity Framework Core**: In-memory database setup
 - 📚 **Swagger/OpenAPI**: Automatic API documentation
 - 🐳 **Docker Support**: Dockerfile and docker-compose.yml
+- ⚒️ **Dev Docker Environment**: Docker setup for development when using PostgreSQL
 - 🔍 **ESLint**: Code linting and formatting for React
 
 ### Supported Options
