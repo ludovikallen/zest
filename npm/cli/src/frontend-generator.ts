@@ -1,11 +1,14 @@
-import fs from 'fs-extra';
-import path from 'path';
-import type { ProjectOptions } from './types.js';
+import fs from "fs-extra";
+import path from "path";
+import type { ProjectOptions } from "./types.js";
 
-export async function createFrontendFiles(projectPath: string, options: ProjectOptions): Promise<void> {
+export async function createFrontendFiles(
+  projectPath: string,
+  options: ProjectOptions
+): Promise<void> {
   const { projectName, packageManager, useAuth, docker } = options;
-  const frontendPath = path.join(projectPath, 'frontend');
-  
+  const frontendPath = path.join(projectPath, "frontend");
+
   await fs.ensureDir(frontendPath);
 
   // Create package.json
@@ -18,12 +21,12 @@ export async function createFrontendFiles(projectPath: string, options: ProjectO
       dev: "vite",
       build: "tsc -b && vite build",
       lint: "eslint .",
-      preview: "vite preview"
+      preview: "vite preview",
     },
     dependencies: {
       react: "^19.1.0",
       "@ludovikallen/zest": "0.0.1",
-      "react-dom": "^19.1.0"
+      "react-dom": "^19.1.0",
     },
     devDependencies: {
       "@types/react": "^19.1.2",
@@ -36,12 +39,12 @@ export async function createFrontendFiles(projectPath: string, options: ProjectO
       "eslint-plugin-react-hooks": "^5.2.0",
       "eslint-plugin-react-refresh": "^0.4.19",
       globals: "^16.0.0",
-      "typescript-eslint": "^8.30.1"
-    }
+      "typescript-eslint": "^8.30.1",
+    },
   };
 
   await fs.writeFile(
-    path.join(frontendPath, 'package.json'), 
+    path.join(frontendPath, "package.json"),
     JSON.stringify(packageJsonContent, null, 2)
   );
 
@@ -54,7 +57,10 @@ export async function createFrontendFiles(projectPath: string, options: ProjectO
     </PropertyGroup>
 </Project>`;
 
-  await fs.writeFile(path.join(frontendPath, `${projectName.toLowerCase()}.frontend.esproj`), esprojContent);
+  await fs.writeFile(
+    path.join(frontendPath, `${projectName.toLowerCase()}.frontend.esproj`),
+    esprojContent
+  );
 
   // Create vite.config.ts
   const viteConfigContent = `import { defineConfig } from 'vite'
@@ -66,17 +72,20 @@ export default defineConfig({
 })
 `;
 
-  await fs.writeFile(path.join(frontendPath, 'vite.config.ts'), viteConfigContent);
+  await fs.writeFile(
+    path.join(frontendPath, "vite.config.ts"),
+    viteConfigContent
+  );
 
   // Create TypeScript config files
   await createTypeScriptConfigs(frontendPath);
-  
+
   // Create index.html
   await createIndexHtml(frontendPath, projectName);
-  
+
   // Create src directory and files
   await createSourceFiles(frontendPath, projectName, useAuth);
-  
+
   // Create public directory
   await createPublicFiles(frontendPath);
 
@@ -103,7 +112,7 @@ async function createTypeScriptConfigs(frontendPath: string): Promise<void> {
   ]
 }`;
 
-  await fs.writeFile(path.join(frontendPath, 'tsconfig.json'), tsconfigContent);
+  await fs.writeFile(path.join(frontendPath, "tsconfig.json"), tsconfigContent);
 
   const tsconfigAppContent = `{
   "compilerOptions": {
@@ -128,7 +137,10 @@ async function createTypeScriptConfigs(frontendPath: string): Promise<void> {
   "include": ["src"]
 }`;
 
-  await fs.writeFile(path.join(frontendPath, 'tsconfig.app.json'), tsconfigAppContent);
+  await fs.writeFile(
+    path.join(frontendPath, "tsconfig.app.json"),
+    tsconfigAppContent
+  );
 
   const tsconfigNodeContent = `{
   "compilerOptions": {
@@ -151,10 +163,16 @@ async function createTypeScriptConfigs(frontendPath: string): Promise<void> {
   "include": ["vite.config.ts"]
 }`;
 
-  await fs.writeFile(path.join(frontendPath, 'tsconfig.node.json'), tsconfigNodeContent);
+  await fs.writeFile(
+    path.join(frontendPath, "tsconfig.node.json"),
+    tsconfigNodeContent
+  );
 }
 
-async function createIndexHtml(frontendPath: string, projectName: string): Promise<void> {
+async function createIndexHtml(
+  frontendPath: string,
+  projectName: string
+): Promise<void> {
   const indexHtmlContent = `<!doctype html>
 <html lang="en">
   <head>
@@ -169,11 +187,15 @@ async function createIndexHtml(frontendPath: string, projectName: string): Promi
   </body>
 </html>`;
 
-  await fs.writeFile(path.join(frontendPath, 'index.html'), indexHtmlContent);
+  await fs.writeFile(path.join(frontendPath, "index.html"), indexHtmlContent);
 }
 
-async function createSourceFiles(frontendPath: string, projectName: string, useAuth: boolean): Promise<void> {
-  const srcPath = path.join(frontendPath, 'src');
+async function createSourceFiles(
+  frontendPath: string,
+  projectName: string,
+  useAuth: boolean
+): Promise<void> {
+  const srcPath = path.join(frontendPath, "src");
   await fs.ensureDir(srcPath);
 
   // Create main.tsx
@@ -188,17 +210,17 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )`;
 
-  await fs.writeFile(path.join(srcPath, 'main.tsx'), mainTsxContent);
+  await fs.writeFile(path.join(srcPath, "main.tsx"), mainTsxContent);
 
   // Create App.tsx based on features
   await createAppComponent(srcPath, projectName, useAuth);
-  
+
   // Create CSS files
   await createStyleFiles(srcPath);
 
   // Create vite-env.d.ts
   const viteEnvContent = `/// <reference types="vite/client" />`;
-  await fs.writeFile(path.join(srcPath, 'vite-env.d.ts'), viteEnvContent);
+  await fs.writeFile(path.join(srcPath, "vite-env.d.ts"), viteEnvContent);
 
   // Create auth files if authentication is enabled
   if (useAuth) {
@@ -206,9 +228,13 @@ createRoot(document.getElementById('root')!).render(
   }
 }
 
-async function createAppComponent(srcPath: string, projectName: string, useAuth: boolean): Promise<void> {
-  let appTsxContent = '';
-  
+async function createAppComponent(
+  srcPath: string,
+  projectName: string,
+  useAuth: boolean
+): Promise<void> {
+  let appTsxContent = "";
+
   if (useAuth) {
     appTsxContent = `import AuthContainer from './auth/AuthContainer'
 import Weather from './auth/Weather'
@@ -315,7 +341,7 @@ function App() {
 export default App`;
   }
 
-  await fs.writeFile(path.join(srcPath, 'App.tsx'), appTsxContent);
+  await fs.writeFile(path.join(srcPath, "App.tsx"), appTsxContent);
 }
 
 async function createStyleFiles(srcPath: string): Promise<void> {
@@ -388,7 +414,7 @@ table {
   color: #333333;
 }`;
 
-  await fs.writeFile(path.join(srcPath, 'App.css'), appCssContent);
+  await fs.writeFile(path.join(srcPath, "App.css"), appCssContent);
 
   const indexCssContent = `:root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -461,11 +487,11 @@ button:focus-visible {
   }
 }`;
 
-  await fs.writeFile(path.join(srcPath, 'index.css'), indexCssContent);
+  await fs.writeFile(path.join(srcPath, "index.css"), indexCssContent);
 }
 
 async function createAuthFiles(srcPath: string): Promise<void> {
-  const authPath = path.join(srcPath, 'auth');
+  const authPath = path.join(srcPath, "auth");
   await fs.ensureDir(authPath);
 
   // Create auth CSS
@@ -586,7 +612,7 @@ h1, h2, h3, h4, h5, h6, p {
   color: #333333;
 }`;
 
-  await fs.writeFile(path.join(authPath, 'Auth.css'), authCssContent);
+  await fs.writeFile(path.join(authPath, "Auth.css"), authCssContent);
 
   // Create AuthContainer.tsx
   const authContainerContent = `import { useState } from "react";
@@ -629,7 +655,10 @@ const AuthContainer = () => {
 
 export default AuthContainer;`;
 
-  await fs.writeFile(path.join(authPath, 'AuthContainer.tsx'), authContainerContent);
+  await fs.writeFile(
+    path.join(authPath, "AuthContainer.tsx"),
+    authContainerContent
+  );
 
   // Create Login.tsx
   const loginContent = `import { useState } from "react";
@@ -693,7 +722,7 @@ const Login = () => {
 
 export default Login;`;
 
-  await fs.writeFile(path.join(authPath, 'Login.tsx'), loginContent);
+  await fs.writeFile(path.join(authPath, "Login.tsx"), loginContent);
 
   // Create Register.tsx
   const registerContent = `import { useState } from "react";
@@ -759,7 +788,7 @@ const Register = () => {
 
 export default Register;`;
 
-  await fs.writeFile(path.join(authPath, 'Register.tsx'), registerContent);
+  await fs.writeFile(path.join(authPath, "Register.tsx"), registerContent);
 
   // Create Weather.tsx
   const weatherContent = `import { useEffect, useState } from "react";
@@ -826,17 +855,17 @@ const Weather = () => {
 
 export default Weather;`;
 
-  await fs.writeFile(path.join(authPath, 'Weather.tsx'), weatherContent);
+  await fs.writeFile(path.join(authPath, "Weather.tsx"), weatherContent);
 }
 
 async function createPublicFiles(frontendPath: string): Promise<void> {
-  const publicPath = path.join(frontendPath, 'public');
+  const publicPath = path.join(frontendPath, "public");
   await fs.ensureDir(publicPath);
 
   // Create vite.svg
   const viteSvgContent = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--logos" width="31.88" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 257"><defs><linearGradient id="IconifyId1813088fe1fbc01fb466" x1="-.828%" x2="57.636%" y1="7.652%" y2="78.411%"><stop offset="0%" stop-color="#41D1FF"></stop><stop offset="100%" stop-color="#BD34FE"></stop></linearGradient><linearGradient id="IconifyId1813088fe1fbc01fb467" x1="43.376%" x2="50.316%" y1="2.242%" y2="89.03%"><stop offset="0%" stop-color="#FFEA83"></stop><stop offset="8.333%" stop-color="#FFDD35"></stop><stop offset="100%" stop-color="#FFA800"></stop></linearGradient></defs><path fill="url(#IconifyId1813088fe1fbc01fb466)" d="M255.153 37.938L134.897 252.976c-2.483 4.44-8.862 4.466-11.382.048L.875 37.958c-2.746-4.814 1.371-10.646 6.827-9.67l120.385 21.517a6.537 6.537 0 0 0 2.322-.004l117.867-21.483c5.438-.991 9.574 4.796 6.877 9.62Z"></path><path fill="url(#IconifyId1813088fe1fbc01fb467)" d="M185.432.063L96.44 17.501a3.268 3.268 0 0 0-2.634 3.014l-5.474 92.456a3.268 3.268 0 0 0 3.997 3.378l24.777-5.718c2.318-.535 4.413 1.507 3.936 3.838l-7.361 36.047c-.495 2.426 1.782 4.5 4.151 3.78l15.304-4.649c2.372-.72 4.652 1.36 4.15 3.788l-11.698 56.621c-.732 3.542 3.979 5.473 5.943 2.437l1.313-2.028l72.516-144.72c1.215-2.423-.88-5.186-3.54-4.672l-25.505 4.922c-2.396.462-4.435-1.77-3.759-4.114l16.646-57.705c.677-2.35-1.37-4.583-3.769-4.113Z"></path></svg>`;
 
-  await fs.writeFile(path.join(publicPath, 'vite.svg'), viteSvgContent);
+  await fs.writeFile(path.join(publicPath, "vite.svg"), viteSvgContent);
 }
 
 async function createEslintConfig(frontendPath: string): Promise<void> {
@@ -869,11 +898,14 @@ export default tseslint.config(
   },
 )`;
 
-  await fs.writeFile(path.join(frontendPath, 'eslint.config.js'), eslintConfigContent);
+  await fs.writeFile(
+    path.join(frontendPath, "eslint.config.js"),
+    eslintConfigContent
+  );
 }
 
 async function createVSCodeConfig(frontendPath: string): Promise<void> {
-  const vscodePath = path.join(frontendPath, '.vscode');
+  const vscodePath = path.join(frontendPath, ".vscode");
   await fs.ensureDir(vscodePath);
 
   const launchJsonContent = `{
@@ -896,17 +928,23 @@ async function createVSCodeConfig(frontendPath: string): Promise<void> {
   ]
 }`;
 
-  await fs.writeFile(path.join(vscodePath, 'launch.json'), launchJsonContent);
+  await fs.writeFile(path.join(vscodePath, "launch.json"), launchJsonContent);
 }
 
-async function createEnvironmentFiles(frontendPath: string, docker: boolean): Promise<void> {
+async function createEnvironmentFiles(
+  frontendPath: string,
+  docker: boolean
+): Promise<void> {
   // Always create .env.development
   const envDevelopmentContent = `VITE_API_BASE_URL=http://localhost:5226`;
-  await fs.writeFile(path.join(frontendPath, '.env.development'), envDevelopmentContent);
+  await fs.writeFile(
+    path.join(frontendPath, ".env.development"),
+    envDevelopmentContent
+  );
 
   // Only create .env when docker option is enabled
   if (docker) {
     const envContent = `VITE_API_BASE_URL=ZEST_API_BASE_URL`;
-    await fs.writeFile(path.join(frontendPath, '.env'), envContent);
+    await fs.writeFile(path.join(frontendPath, ".env"), envContent);
   }
 }

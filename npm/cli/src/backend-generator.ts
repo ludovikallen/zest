@@ -1,12 +1,15 @@
-import fs from 'fs-extra';
-import path from 'path';
-import type { ProjectOptions } from './types.js';
-import { randomUUID } from 'crypto';
+import fs from "fs-extra";
+import path from "path";
+import type { ProjectOptions } from "./types.js";
+import { randomUUID } from "crypto";
 
-export async function createBackendFiles(projectPath: string, options: ProjectOptions): Promise<void> {
+export async function createBackendFiles(
+  projectPath: string,
+  options: ProjectOptions
+): Promise<void> {
   const { projectName, database, useAuth } = options;
-  const backendPath = path.join(projectPath, 'backend');
-  
+  const backendPath = path.join(projectPath, "backend");
+
   // Create backend directory
   await fs.ensureDir(backendPath);
 
@@ -22,15 +25,26 @@ export async function createBackendFiles(projectPath: string, options: ProjectOp
 
     <ItemGroup>
 		  <PackageReference Include="LudovikAllen.Zest" Version="0.0.3" />
-      ${database === 'inmemory' ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />' :
-      database === 'sqlite' ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />' :
-      ' <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />'}
-      ${database !== 'inmemory' ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6" />' : ''}
+      ${
+        database === "inmemory"
+          ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />'
+          : database === "sqlite"
+          ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />'
+          : ' <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />'
+      }
+      ${
+        database !== "inmemory"
+          ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6" />'
+          : ""
+      }
     </ItemGroup>
 
 </Project>`;
 
-  await fs.writeFile(path.join(backendPath, `${projectName}.csproj`), csprojContent);
+  await fs.writeFile(
+    path.join(backendPath, `${projectName}.csproj`),
+    csprojContent
+  );
 
   // Create Program.cs
   const programContent = `using Microsoft.EntityFrameworkCore;
@@ -48,11 +62,11 @@ ${getUseZestLine(useAuth)}
 app.Run();
 `;
 
-  await fs.writeFile(path.join(backendPath, 'Program.cs'), programContent);
+  await fs.writeFile(path.join(backendPath, "Program.cs"), programContent);
 
   // Create Controllers directory and WeatherForecastController if weather feature is selected
-  await fs.ensureDir(path.join(backendPath, 'Controllers'));
-    
+  await fs.ensureDir(path.join(backendPath, "Controllers"));
+
   const weatherControllerContent = `using Microsoft.AspNetCore.Mvc;
 
 namespace ${projectName}.Controllers;
@@ -87,7 +101,10 @@ public class WeatherForecastController : ControllerBase
 }
 `;
 
-  await fs.writeFile(path.join(backendPath, 'Controllers', 'WeatherForecastController.cs'), weatherControllerContent);
+  await fs.writeFile(
+    path.join(backendPath, "Controllers", "WeatherForecastController.cs"),
+    weatherControllerContent
+  );
 
   const weatherForecastContent = `namespace ${projectName};
 
@@ -103,12 +120,15 @@ public class WeatherForecast
 }
 `;
 
-  await fs.writeFile(path.join(backendPath, 'WeatherForecast.cs'), weatherForecastContent);
+  await fs.writeFile(
+    path.join(backendPath, "WeatherForecast.cs"),
+    weatherForecastContent
+  );
 
   await createApplicationDbContext(backendPath, useAuth);
 
   // Create Properties directory and launchSettings.json
-  await fs.ensureDir(path.join(backendPath, 'Properties'));
+  await fs.ensureDir(path.join(backendPath, "Properties"));
   const launchSettingsContent = `{
   "profiles": {
     "http": {
@@ -134,7 +154,10 @@ public class WeatherForecast
   "$schema": "https://json.schemastore.org/launchsettings.json"
 }`;
 
-  await fs.writeFile(path.join(backendPath, 'Properties', 'launchSettings.json'), launchSettingsContent);
+  await fs.writeFile(
+    path.join(backendPath, "Properties", "launchSettings.json"),
+    launchSettingsContent
+  );
 
   // Create appsettings files
   const appSettingsContent = `{
@@ -161,8 +184,14 @@ public class WeatherForecast
   }
 }`;
 
-  await fs.writeFile(path.join(backendPath, 'appsettings.json'), appSettingsContent);
-  await fs.writeFile(path.join(backendPath, 'appsettings.Development.json'), devAppSettingsContent);
+  await fs.writeFile(
+    path.join(backendPath, "appsettings.json"),
+    appSettingsContent
+  );
+  await fs.writeFile(
+    path.join(backendPath, "appsettings.Development.json"),
+    devAppSettingsContent
+  );
 
   // Create solution file
   await createSolutionFile(projectPath, projectName);
@@ -171,7 +200,10 @@ public class WeatherForecast
   await createSolutionLaunchFile(projectPath, projectName);
 }
 
-async function createSolutionFile(projectPath: string, projectName: string): Promise<void> {
+async function createSolutionFile(
+  projectPath: string,
+  projectName: string
+): Promise<void> {
   const backendProjectGuid = randomUUID().toUpperCase();
   const frontendProjectGuid = randomUUID().toUpperCase();
   const solutionGuid = randomUUID().toUpperCase();
@@ -210,10 +242,16 @@ Global
 EndGlobal
 `;
 
-  await fs.writeFile(path.join(projectPath, `${projectName}.sln`), solutionContent);
+  await fs.writeFile(
+    path.join(projectPath, `${projectName}.sln`),
+    solutionContent
+  );
 }
 
-async function createApplicationDbContext(projectPath: string, useAuth: boolean): Promise<void> {
+async function createApplicationDbContext(
+  projectPath: string,
+  useAuth: boolean
+): Promise<void> {
   let applicationDbContexContent;
   if (!useAuth) {
     applicationDbContexContent = `using Microsoft.EntityFrameworkCore;
@@ -221,7 +259,7 @@ async function createApplicationDbContext(projectPath: string, useAuth: boolean)
 internal class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
 }
-`
+`;
   } else {
     applicationDbContexContent = `using Microsoft.EntityFrameworkCore;
 using Zest;
@@ -229,38 +267,59 @@ using Zest;
 internal class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : ZestAuthDbContext<ApplicationDbContext>(options)
 {
 }
-`
+`;
   }
 
-    await fs.writeFile(path.join(projectPath, 'ApplicationDbContext.cs'), applicationDbContexContent);
+  await fs.writeFile(
+    path.join(projectPath, "ApplicationDbContext.cs"),
+    applicationDbContexContent
+  );
 }
 
-function getAddZestLine(useAuth: boolean, database: string, projectName: string): string {
+function getAddZestLine(
+  useAuth: boolean,
+  database: string,
+  projectName: string
+): string {
   let databaseOptions;
-  if (database === 'inmemory') {
-    databaseOptions = 'options => options.UseInMemoryDatabase(Assembly.GetExecutingAssembly().GetName().Name)';
-  } else if (database === 'sqlite') {
-    databaseOptions = 'options => options.UseSqlite("Data Source=' + projectName + '.db", b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name))';
-  } else if (database === 'postgresql') {
-    databaseOptions = 'options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name))';
+  if (database === "inmemory") {
+    databaseOptions =
+      "options => options.UseInMemoryDatabase(Assembly.GetExecutingAssembly().GetName().Name)";
+  } else if (database === "sqlite") {
+    databaseOptions =
+      'options => options.UseSqlite("Data Source=' +
+      projectName +
+      '.db", b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name))';
+  } else if (database === "postgresql") {
+    databaseOptions =
+      'options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name))';
   }
 
   if (useAuth) {
-      return 'builder.Services.AddZestWithAuth<ApplicationDbContext>('+ databaseOptions +');';
+    return (
+      "builder.Services.AddZestWithAuth<ApplicationDbContext>(" +
+      databaseOptions +
+      ");"
+    );
   } else {
-      return 'builder.Services.AddZest<ApplicationDbContext>('+ databaseOptions +');';
+    return (
+      "builder.Services.AddZest<ApplicationDbContext>(" + databaseOptions + ");"
+    );
   }
 }
 
 function getUseZestLine(useAuth: boolean): string {
   if (useAuth) {
-    return 'app.UseZestWithAuth();';
+    return "app.UseZestWithAuth();";
   } else {
-    return 'app.UseZest();';
+    return "app.UseZest();";
   }
 }
 
-async function createSolutionLaunchFile(projectPath: string, projectName: string): Promise<void> {
+async function createSolutionLaunchFile(
+  projectPath: string,
+  projectName: string
+): Promise<void> {
   const slnLaunchContent = `[
   {
     "Name": "dev",
@@ -279,5 +338,8 @@ async function createSolutionLaunchFile(projectPath: string, projectName: string
   }
 ]`;
 
-  await fs.writeFile(path.join(projectPath, `${projectName}.slnLaunch`), slnLaunchContent);
+  await fs.writeFile(
+    path.join(projectPath, `${projectName}.slnLaunch`),
+    slnLaunchContent
+  );
 }

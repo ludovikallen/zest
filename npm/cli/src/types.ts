@@ -2,7 +2,7 @@ export interface ProjectOptions {
   projectName: string;
   useAuth: boolean;
   docker: boolean;
-  database: 'inmemory' | 'sqlite' | 'postgresql';
-  packageManager: 'npm' | 'yarn' | 'pnpm';
+  database: "inmemory" | "sqlite" | "postgresql";
+  packageManager: "npm" | "yarn" | "pnpm";
   runSetup?: boolean;
 }

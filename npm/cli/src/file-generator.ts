@@ -1,13 +1,16 @@
-import fs from 'fs-extra';
-import path from 'path';
-import type { ProjectOptions } from './types.js';
+import fs from "fs-extra";
+import path from "path";
+import type { ProjectOptions } from "./types.js";
 
-export async function createAdditionalFiles(projectPath: string, options: ProjectOptions): Promise<void> {
+export async function createAdditionalFiles(
+  projectPath: string,
+  options: ProjectOptions
+): Promise<void> {
   const { projectName, docker, database } = options;
 
   // Create README.md
   await createReadme(projectPath, options);
-  
+
   // Create .gitignore
   await createGitignore(projectPath);
 
@@ -17,23 +20,26 @@ export async function createAdditionalFiles(projectPath: string, options: Projec
   }
 
   // Create dev folder with PostgreSQL docker-compose if PostgreSQL is selected
-  if (database === 'postgresql') {
+  if (database === "postgresql") {
     await createDevPostgreSQLFiles(projectPath, projectName);
   }
 }
 
-async function createReadme(projectPath: string, options: ProjectOptions): Promise<void> {
+async function createReadme(
+  projectPath: string,
+  options: ProjectOptions
+): Promise<void> {
   const { projectName, docker } = options;
-  
+
   const readmeContent = `# ${projectName}
 
 A Zest application with .NET backend and React frontend.
 
 ## Features
 
-${options.useAuth ? '- ✅ Authentication' : '- ❌ Authentication'}
+${options.useAuth ? "- ✅ Authentication" : "- ❌ Authentication"}
 - ✅ Weather API Example
-${docker ? '- ✅ Docker Support' : '- ❌ Docker Support'}
+${docker ? "- ✅ Docker Support" : "- ❌ Docker Support"}
 
 ## Getting Started
 
@@ -41,19 +47,27 @@ ${docker ? '- ✅ Docker Support' : '- ❌ Docker Support'}
 
 - .NET 9.0
 - Node.js 18 or later
-- ${options.packageManager}${options.database === 'postgresql' ? '\n- Docker (for PostgreSQL database)' : ''}
+- ${options.packageManager}${
+    options.database === "postgresql"
+      ? "\n- Docker (for PostgreSQL database)"
+      : ""
+  }
 
 ### Installation
 
 1. Clone this repository
-${options.database === 'postgresql' ? '2. Start the PostgreSQL database:\n   ```\n   cd dev\n   docker compose up -d\n   cd ..\n   ```\n\n3' : '2'}. Install .NET dependencies:
+${
+  options.database === "postgresql"
+    ? "2. Start the PostgreSQL database:\n   ```\n   cd dev\n   docker compose up -d\n   cd ..\n   ```\n\n3"
+    : "2"
+}. Install .NET dependencies:
    \`\`\`
    cd backend
    dotnet restore
    cd ..
    \`\`\`
 
-${options.database === 'postgresql' ? '4' : '3'}. Install frontend dependencies:
+${options.database === "postgresql" ? "4" : "3"}. Install frontend dependencies:
    \`\`\`
    cd frontend
    ${options.packageManager} install
@@ -95,7 +109,15 @@ ${projectName}/
 │   ├── Properties/       # Launch settings
 │   ├── Program.cs        # Application entry point
 │   ├── ${projectName}.csproj
-│   └── appsettings.json${options.database === 'postgresql' ? '\n├── dev/                  # PostgreSQL development setup' : ''}${docker ? '\n├── docker/               # Docker configuration\n│   ├── Dockerfile\n│   ├── docker-compose.yml\n│   └── templates/        # Nginx configuration templates' : ''}
+│   └── appsettings.json${
+    options.database === "postgresql"
+      ? "\n├── dev/                  # PostgreSQL development setup"
+      : ""
+  }${
+    docker
+      ? "\n├── docker/               # Docker configuration\n│   ├── Dockerfile\n│   ├── docker-compose.yml\n│   └── templates/        # Nginx configuration templates"
+      : ""
+  }
 ├── frontend/             # React frontend
 │   ├── src/
 │   │   ├── auth/        # Authentication components
@@ -116,7 +138,7 @@ ${projectName}/
 - [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
 `;
 
-  await fs.writeFile(path.join(projectPath, 'README.md'), readmeContent);
+  await fs.writeFile(path.join(projectPath, "README.md"), readmeContent);
 }
 
 async function createGitignore(projectPath: string): Promise<void> {
@@ -206,11 +228,14 @@ test-results/
 playwright-report/
 `;
 
-  await fs.writeFile(path.join(projectPath, '.gitignore'), gitignoreContent);
+  await fs.writeFile(path.join(projectPath, ".gitignore"), gitignoreContent);
 }
 
-async function createDockerFiles(projectPath: string, projectName: string): Promise<void> {
-  const dockerPath = path.join(projectPath, 'docker');
+async function createDockerFiles(
+  projectPath: string,
+  projectName: string
+): Promise<void> {
+  const dockerPath = path.join(projectPath, "docker");
   await fs.ensureDir(dockerPath);
   const lowerCaseProjectName = projectName.toLowerCase();
 
@@ -332,7 +357,7 @@ USER nginx
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]`;
 
-  await fs.writeFile(path.join(dockerPath, 'Dockerfile'), dockerfileContent);
+  await fs.writeFile(path.join(dockerPath, "Dockerfile"), dockerfileContent);
 
   const dockerComposeContent = `version: '3.8'
 
@@ -382,11 +407,17 @@ volumes:
   nginx-cache:
   nginx-logs:`;
 
-  await fs.writeFile(path.join(dockerPath, 'docker-compose.yml'), dockerComposeContent);
+  await fs.writeFile(
+    path.join(dockerPath, "docker-compose.yml"),
+    dockerComposeContent
+  );
 }
 
-async function createDevPostgreSQLFiles(projectPath: string, projectName: string): Promise<void> {
-  const devPath = path.join(projectPath, 'dev');
+async function createDevPostgreSQLFiles(
+  projectPath: string,
+  projectName: string
+): Promise<void> {
+  const devPath = path.join(projectPath, "dev");
   await fs.ensureDir(devPath);
 
   const devDockerComposeContent = `version: '3.8'
@@ -409,7 +440,10 @@ volumes:
   postgres_data:
 `;
 
-  await fs.writeFile(path.join(devPath, 'docker-compose.yml'), devDockerComposeContent);
+  await fs.writeFile(
+    path.join(devPath, "docker-compose.yml"),
+    devDockerComposeContent
+  );
 
   // Create a README for the dev folder
   const devReadmeContent = `# Development Database
@@ -450,11 +484,11 @@ postgres://postgres:postgres@localhost:5432/${projectName.toLowerCase()}
 \`\`\`
 `;
 
-  await fs.writeFile(path.join(devPath, 'README.md'), devReadmeContent);
+  await fs.writeFile(path.join(devPath, "README.md"), devReadmeContent);
 }
 
 async function createNginxTemplate(dockerPath: string): Promise<void> {
-  const templatesPath = path.join(dockerPath, 'templates');
+  const templatesPath = path.join(dockerPath, "templates");
   await fs.ensureDir(templatesPath);
 
   const nginxTemplateContent = `# Upstream backend server
@@ -517,5 +551,8 @@ server {
     }
 }`;
 
-  await fs.writeFile(path.join(templatesPath, 'default.conf.template'), nginxTemplateContent);
+  await fs.writeFile(
+    path.join(templatesPath, "default.conf.template"),
+    nginxTemplateContent
+  );
 }
