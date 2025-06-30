@@ -24,7 +24,7 @@ export async function createBackendFiles(
     </PropertyGroup>
 
     <ItemGroup>
-		  <PackageReference Include="LudovikAllen.Zest" Version="0.0.3" />
+		<PackageReference Include="LudovikAllen.Zest" Version="0.0.3" />
       ${
         database === "inmemory"
           ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />'
@@ -33,9 +33,8 @@ export async function createBackendFiles(
           : ' <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />'
       }
       ${
-        database !== "inmemory"
-          ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6" />'
-          : ""
+        database !== "inmemory" &&
+        '  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6" />'
       }
     </ItemGroup>
 
@@ -47,11 +46,15 @@ export async function createBackendFiles(
   );
 
   // Create Program.cs
-  const programContent = `using Microsoft.EntityFrameworkCore;
+  const programContent = `using ${projectName};
+using ${projectName}.Repositories;
+using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using Zest;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 
 ${getAddZestLine(useAuth, database, projectName)}
 
@@ -64,68 +67,13 @@ app.Run();
 
   await fs.writeFile(path.join(backendPath, "Program.cs"), programContent);
 
-  // Create Controllers directory and WeatherForecastController if weather feature is selected
-  await fs.ensureDir(path.join(backendPath, "Controllers"));
+  await createControllers(backendPath, projectName, useAuth);
 
-  const weatherControllerContent = `using Microsoft.AspNetCore.Mvc;
+  await createEntities(backendPath, projectName, useAuth);
 
-namespace ${projectName}.Controllers;
+  await createRepositories(backendPath, projectName, useAuth);
 
-[ApiController]
-[Route("[controller]")]
-public class WeatherForecastController : ControllerBase
-{
-    private static readonly string[] Summaries = new[]
-    {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
-
-    private readonly ILogger<WeatherForecastController> _logger;
-
-    public WeatherForecastController(ILogger<WeatherForecastController> logger)
-    {
-        _logger = logger;
-    }
-
-    [HttpGet(Name = "GetWeatherForecast")]
-    public IEnumerable<WeatherForecast> Get()
-    {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-        {
-            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-        })
-        .ToArray();
-    }
-}
-`;
-
-  await fs.writeFile(
-    path.join(backendPath, "Controllers", "WeatherForecastController.cs"),
-    weatherControllerContent
-  );
-
-  const weatherForecastContent = `namespace ${projectName};
-
-public class WeatherForecast
-{
-    public DateOnly Date { get; set; }
-
-    public int TemperatureC { get; set; }
-
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-
-    public string? Summary { get; set; }
-}
-`;
-
-  await fs.writeFile(
-    path.join(backendPath, "WeatherForecast.cs"),
-    weatherForecastContent
-  );
-
-  await createApplicationDbContext(backendPath, useAuth);
+  await createApplicationDbContext(backendPath, projectName, useAuth);
 
   // Create Properties directory and launchSettings.json
   await fs.ensureDir(path.join(backendPath, "Properties"));
@@ -250,22 +198,49 @@ EndGlobal
 
 async function createApplicationDbContext(
   projectPath: string,
+  projectName: string,
   useAuth: boolean
 ): Promise<void> {
   let applicationDbContexContent;
   if (!useAuth) {
-    applicationDbContexContent = `using Microsoft.EntityFrameworkCore;
+    applicationDbContexContent = `using ${projectName}.Entities;
+using Microsoft.EntityFrameworkCore;
 
-internal class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+namespace ${projectName};
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
+    public DbSet<Todo> Todos { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        foreach (var entity in builder.Model.GetEntityTypes().Where(e => typeof(BaseEntity).IsAssignableFrom(e.ClrType)))
+        {
+            builder.Entity(entity.Name).HasKey(nameof(BaseEntity.Id));
+        }
+
+        base.OnModelCreating(builder);
+    }
 }
 `;
   } else {
-    applicationDbContexContent = `using Microsoft.EntityFrameworkCore;
+    applicationDbContexContent = `using ${projectName}.Entities;
+using Microsoft.EntityFrameworkCore;
 using Zest;
 
-internal class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : ZestAuthDbContext<ApplicationDbContext>(options)
+namespace ${projectName};
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : ZestAuthDbContext<ApplicationDbContext>(options)
 {
+    public DbSet<Todo> Todos { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        foreach (var entity in builder.Model.GetEntityTypes().Where(e => typeof(BaseEntity).IsAssignableFrom(e.ClrType)))
+        {
+            builder.Entity(entity.Name).HasKey(nameof(BaseEntity.Id));
+        }
+
+        base.OnModelCreating(builder);
+    }
 }
 `;
   }
@@ -284,15 +259,15 @@ function getAddZestLine(
   let databaseOptions;
   if (database === "inmemory") {
     databaseOptions =
-      "options => options.UseInMemoryDatabase(Assembly.GetExecutingAssembly().GetName().Name)";
+      "options => options.UseInMemoryDatabase(Assembly.GetExecutingAssembly().GetName().Name!)";
   } else if (database === "sqlite") {
     databaseOptions =
       'options => options.UseSqlite("Data Source=' +
       projectName +
-      '.db", b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name))';
+      '.db", b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name!))';
   } else if (database === "postgresql") {
     databaseOptions =
-      'options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name))';
+      'options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name!))';
   }
 
   if (useAuth) {
@@ -341,5 +316,602 @@ async function createSolutionLaunchFile(
   await fs.writeFile(
     path.join(projectPath, `${projectName}.slnLaunch`),
     slnLaunchContent
+  );
+}
+
+async function createControllers(
+  backendPath: string,
+  projectName: string,
+  useAuth: boolean
+): Promise<void> {
+  const controllersPath = path.join(backendPath, "Controllers");
+  await fs.ensureDir(controllersPath);
+
+  let content;
+  if (useAuth) {
+    content = `using ${projectName}.Entities;
+using ${projectName}.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
+namespace ${projectName}.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+[Authorize]
+public class TodoController(ITodoRepository todoRepository, ILogger<TodoController> logger) : ControllerBase
+{
+    [HttpGet(Name = "GetTodos")]
+    public IEnumerable<Todo> Get()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId != null) 
+        {
+            return todoRepository.GetTodos(userId);
+        }
+
+        return [];
+    }
+
+    [HttpGet("{id:guid}", Name = "GetTodoById")]
+    public ActionResult<Todo> Get(Guid id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var todo = todoRepository.GetTodoById(id);
+        if (todo == null)
+        {
+            return NotFound();
+        }
+
+        // Ensure the todo belongs to the current user
+        if (todo.UserId != userId)
+        {
+            return Forbid();
+        }
+
+        return Ok(todo);
+    }
+
+    [HttpPost(Name = "CreateTodo")]
+    public ActionResult<Todo> Post([FromBody] CreateTodoRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var todo = new Todo
+        {
+            Title = request.Title,
+            Description = request.Description,
+            Status = Status.Todo,
+            UserId = userId
+        };
+
+        try
+        {
+            todoRepository.InsertTodo(todo);
+            todoRepository.Save();
+            return CreatedAtRoute("GetTodoById", new { id = todo.Id }, todo);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating todo for user {UserId}", userId);
+            return StatusCode(500, "An error occurred while creating the todo.");
+        }
+    }
+
+    [HttpPut("{id:guid}", Name = "UpdateTodo")]
+    public IActionResult Put(Guid id, [FromBody] UpdateTodoRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var existingTodo = todoRepository.GetTodoById(id);
+        if (existingTodo == null)
+        {
+            return NotFound();
+        }
+
+        // Ensure the todo belongs to the current user
+        if (existingTodo.UserId != userId)
+        {
+            return Forbid();
+        }
+
+        try
+        {
+            todoRepository.UpdateTodo(existingTodo);
+
+            existingTodo.Title = request.Title;
+            existingTodo.Description = request.Description;
+            existingTodo.Status = request.Status;
+            existingTodo.UpdatedDate = DateTime.UtcNow;
+
+            todoRepository.Save();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error updating todo {TodoId} for user {UserId}", id, userId);
+            return StatusCode(500, "An error occurred while updating the todo.");
+        }
+    }
+
+    [HttpDelete("{id:guid}", Name = "DeleteTodo")]
+    public IActionResult Delete(Guid id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var todo = todoRepository.GetTodoById(id);
+        if (todo == null)
+        {
+            return NotFound();
+        }
+
+        // Ensure the todo belongs to the current user
+        if (todo.UserId != userId)
+        {
+            return Forbid();
+        }
+
+        try
+        {
+            todoRepository.DeleteTodo(id);
+            todoRepository.Save();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error deleting todo {TodoId} for user {UserId}", id, userId);
+            return StatusCode(500, "An error occurred while deleting the todo.");
+        }
+    }
+}
+
+public record CreateTodoRequest
+{
+    public required string Title { get; init; }
+    public required string Description { get; init; }
+}
+
+public record UpdateTodoRequest
+{
+    public required string Title { get; init; }
+    public required string Description { get; init; }
+    public required Status Status { get; init; }
+}`;
+  } else {
+    content = `using ${projectName}.Entities;
+using ${projectName}.Repositories;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ${projectName}.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class TodoController(ITodoRepository todoRepository, ILogger<TodoController> logger) : ControllerBase
+{
+    [HttpGet(Name = "GetTodos")]
+    public IEnumerable<Todo> Get()
+    {
+        return todoRepository.GetTodos();
+    }
+
+    [HttpGet("{id:guid}", Name = "GetTodoById")]
+    public ActionResult<Todo> Get(Guid id)
+    {
+        var todo = todoRepository.GetTodoById(id);
+        if (todo == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(todo);
+    }
+
+    [HttpPost(Name = "CreateTodo")]
+    public ActionResult<Todo> Post([FromBody] CreateTodoRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var todo = new Todo
+        {
+            Title = request.Title,
+            Description = request.Description,
+            Status = Status.Todo
+        };
+
+        try
+        {
+            todoRepository.InsertTodo(todo);
+            todoRepository.Save();
+            return CreatedAtRoute("GetTodoById", new { id = todo.Id }, todo);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating todo");
+            return StatusCode(500, "An error occurred while creating the todo.");
+        }
+    }
+
+    [HttpPut("{id:guid}", Name = "UpdateTodo")]
+    public IActionResult Put(Guid id, [FromBody] UpdateTodoRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var existingTodo = todoRepository.GetTodoById(id);
+        if (existingTodo == null)
+        {
+            return NotFound();
+        }
+
+        try
+        {
+            todoRepository.UpdateTodo(existingTodo);
+
+            existingTodo.Title = request.Title;
+            existingTodo.Description = request.Description;
+            existingTodo.Status = request.Status;
+            existingTodo.UpdatedDate = DateTime.UtcNow;
+
+            todoRepository.Save();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error updating todo {TodoId}", id);
+            return StatusCode(500, "An error occurred while updating the todo.");
+        }
+    }
+
+    [HttpDelete("{id:guid}", Name = "DeleteTodo")]
+    public IActionResult Delete(Guid id)
+    {
+        var todo = todoRepository.GetTodoById(id);
+        if (todo == null)
+        {
+            return NotFound();
+        }
+
+        try
+        {
+            todoRepository.DeleteTodo(id);
+            todoRepository.Save();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error deleting todo {TodoId}", id);
+            return StatusCode(500, "An error occurred while deleting the todo.");
+        }
+    }
+}
+
+public record CreateTodoRequest
+{
+    public required string Title { get; init; }
+    public required string Description { get; init; }
+}
+
+public record UpdateTodoRequest
+{
+    public required string Title { get; init; }
+    public required string Description { get; init; }
+    public required Status Status { get; init; }
+}`;
+  }
+
+  await fs.writeFile(path.join(controllersPath, "TodoController.cs"), content);
+}
+
+async function createEntities(
+  backendPath: string,
+  projectName: string,
+  useAuth: boolean
+): Promise<void> {
+  const entitiesPath = path.join(backendPath, "Entities");
+  await fs.ensureDir(entitiesPath);
+
+  await createBaseEntity(entitiesPath, projectName);
+  await createStatus(entitiesPath, projectName);
+  await createTodo(entitiesPath, projectName, useAuth);
+}
+
+async function createBaseEntity(
+  entitiesPath: string,
+  projectName: string
+): Promise<void> {
+  const content = `namespace ${projectName}.Entities;
+
+public record BaseEntity
+{
+    public Guid Id { get; } = Guid.NewGuid();
+
+    public DateTime CreatedDate { get; } = DateTime.UtcNow;
+
+    public DateTime UpdatedDate { get; set; } = DateTime.UtcNow;
+}
+`;
+  await fs.writeFile(path.join(entitiesPath, "BaseEntity.cs"), content);
+}
+
+async function createStatus(
+  entitiesPath: string,
+  projectName: string
+): Promise<void> {
+  const content = `namespace ${projectName}.Entities;
+
+public enum Status
+{
+    Todo = 0,
+    Done = 1
+}
+`;
+  await fs.writeFile(path.join(entitiesPath, "Status.cs"), content);
+}
+
+async function createTodo(
+  entitiesPath: string,
+  projectName: string,
+  useAuth: boolean
+): Promise<void> {
+  let content;
+  if (useAuth) {
+    content = `namespace ${projectName}.Entities;
+
+public record Todo : BaseEntity
+{
+    public required string Title { get; set; }
+
+    public required string Description { get; set; }
+
+    public required Status Status { get; set; }
+
+    public required string UserId { get; init; }
+}
+`;
+  } else {
+    content = `namespace ${projectName}.Entities;
+
+public record Todo : BaseEntity
+{
+    public required string Title { get; set; }
+
+    public required string Description { get; set; }
+
+    public required Status Status { get; set; }
+}
+`;
+  }
+
+  await fs.writeFile(path.join(entitiesPath, "Todo.cs"), content);
+}
+
+async function createRepositories(
+  backendPath: string,
+  projectName: string,
+  useAuth: boolean
+): Promise<void> {
+  const repositoriesPath = path.join(backendPath, "Repositories");
+  await fs.ensureDir(repositoriesPath);
+
+  await createTodoRepository(repositoriesPath, projectName, useAuth);
+  await createITodoRepository(repositoriesPath, projectName, useAuth);
+}
+
+async function createTodoRepository(
+  repositoriesPath: string,
+  projectName: string,
+  useAuth: boolean
+): Promise<void> {
+  let content;
+  if (useAuth) {
+    content = `using ${projectName}.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace ${projectName}.Repositories;
+public class TodoRepository(ApplicationDbContext context) : ITodoRepository, IDisposable
+{
+    public void DeleteTodo(Guid id)
+    {
+        var todo = context.Todos.Find(id);
+        if (todo != null)
+        {
+            context.Todos.Remove(todo);
+        }
+    }
+
+    public Todo? GetTodoById(Guid id)
+    {
+        return context.Todos.Find(id);
+    }
+
+    public IEnumerable<Todo> GetTodos(string userId)
+    {
+        return context.Todos.Where(todo => todo.UserId == userId);
+    }
+
+    public void InsertTodo(Todo todo)
+    {
+        context.Todos.Add(todo);
+    }
+
+    public void UpdateTodo(Todo todo)
+    {
+        context.Entry(todo).State = EntityState.Modified;
+    }
+
+    public void Save()
+    {
+        context.SaveChanges();
+    }
+
+    private bool disposed = false;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this.disposed)
+        {
+            if (disposing)
+            {
+                context.Dispose();
+            }
+        }
+        this.disposed = true;
+    }
+
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+}`;
+  } else {
+    content = `using ${projectName}.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace ${projectName}.Repositories;
+public class TodoRepository(ApplicationDbContext context) : ITodoRepository, IDisposable
+{
+    public void DeleteTodo(Guid id)
+    {
+        var todo = context.Todos.Find(id);
+        if (todo != null)
+        {
+            context.Todos.Remove(todo);
+        }
+    }
+
+    public Todo? GetTodoById(Guid id)
+    {
+        return context.Todos.Find(id);
+    }
+
+    public IEnumerable<Todo> GetTodos()
+    {
+        return context.Todos;
+    }
+
+    public void InsertTodo(Todo todo)
+    {
+        context.Todos.Add(todo);
+    }
+
+    public void UpdateTodo(Todo todo)
+    {
+        context.Entry(todo).State = EntityState.Modified;
+    }
+
+    public void Save()
+    {
+        context.SaveChanges();
+    }
+
+    private bool disposed = false;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this.disposed)
+        {
+            if (disposing)
+            {
+                context.Dispose();
+            }
+        }
+        this.disposed = true;
+    }
+
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+}`;
+  }
+
+  await fs.writeFile(path.join(repositoriesPath, "TodoRepository.cs"), content);
+}
+
+async function createITodoRepository(
+  repositoriesPath: string,
+  projectName: string,
+  useAuth: boolean
+): Promise<void> {
+  let content;
+  if (useAuth) {
+    content = `using ${projectName}.Entities;
+
+namespace ${projectName}.Repositories;
+
+public interface ITodoRepository : IDisposable
+{
+    IEnumerable<Todo> GetTodos(string userId);
+
+    Todo? GetTodoById(Guid id);
+
+    void InsertTodo(Todo todo);
+
+    void DeleteTodo(Guid id);
+
+    void UpdateTodo(Todo todo);
+
+    void Save();
+}
+`;
+  } else {
+    content = `using ${projectName}.Entities;
+
+namespace ${projectName}.Repositories;
+
+public interface ITodoRepository : IDisposable
+{
+    IEnumerable<Todo> GetTodos();
+
+    Todo? GetTodoById(Guid id);
+
+    void InsertTodo(Todo todo);
+
+    void DeleteTodo(Guid id);
+
+    void UpdateTodo(Todo todo);
+
+    void Save();
+}`;
+  }
+
+  await fs.writeFile(
+    path.join(repositoriesPath, "ITodoRepository.cs"),
+    content
   );
 }

@@ -41,6 +41,52 @@ async function execWithSpinner(
 }
 
 async function main() {
+  const argv = await yargs(hideBin(process.argv))
+    .command("$0 [name]", "Create a new Zest application", (yargs) => {
+      yargs.positional("name", {
+        describe:
+          "Name of the project to create using CamelCase (e.g., MyZestApp)",
+        type: "string",
+      });
+      yargs.option("auth", {
+        describe: "Include authentication",
+        type: "boolean",
+        default: false,
+      });
+      yargs.option("docker", {
+        describe: "Include Docker files for deployment",
+        type: "boolean",
+        default: true,
+      });
+      yargs.option("database", {
+        describe: "Database type",
+        choices: ["sqlite", "postgresql", "inmemory"] as const,
+        default: "sqlite" as const,
+      });
+      yargs.option("package-manager", {
+        describe: "Package manager",
+        choices: ["npm", "yarn", "pnpm"] as const,
+        default: "npm" as const,
+      });
+      yargs.option("no-setup", {
+        describe: "Skip automatic setup commands",
+        type: "boolean",
+        default: false,
+      });
+    })
+    .usage("Usage: $0 [name] [options]")
+    .example("$0", "Interactive mode")
+    .example("$0 MyApp", "Create MyApp with default settings")
+    .example(
+      "$0 MyApp --auth --database postgresql",
+      "Create MyApp with custom options"
+    )
+    .help()
+    .alias("h", "help")
+    .alias("v", "version").argv;
+
+  let options: ProjectOptions;
+
   console.log(chalk.blue.bold("🚀 Welcome to create-zest!"));
   console.log(
     chalk.gray(
@@ -48,71 +94,104 @@ async function main() {
     )
   );
 
-  const argv = await yargs(hideBin(process.argv))
-    .help()
-    .alias("h", "help")
-    .alias("v", "version").argv;
+  // Check if name was provided - determines interactive vs flag mode
+  const providedName = argv.name as string | undefined;
+  const isInteractiveMode = !providedName;
 
-  let options: ProjectOptions;
+  let projectName: string;
 
-  const projectName = await input({
-    message: "What is your project name?",
-    default: "MyZestApp",
-    validate: (input: string) => {
-      if (!input || input.trim().length === 0) {
-        return "Project name is required";
-      }
-      if (!/^[A-Z][a-zA-Z]*$/.test(input)) {
-        return "Project name can only contain letters and must be in CamelCase (e.g., MyZestApp)";
-      }
-      return true;
-    },
-  });
+  if (isInteractiveMode) {
+    // Interactive mode - prompt for everything including name
+    projectName = await input({
+      message: "What is the name of your project?",
+      validate: (input: string) => {
+        if (!input || input.trim().length === 0) {
+          return "Project name is required";
+        }
+        if (!/^[A-Z][a-zA-Z]*$/.test(input.trim())) {
+          return "Project name can only contain letters and must be in CamelCase (e.g., MyZestApp)";
+        }
+        return true;
+      },
+    });
 
-  const useAuth = await confirm({
-    message: "Do you want to include authentication?",
-    default: true,
-  });
+    const useAuth = await confirm({
+      message: "Do you want to include authentication?",
+      default: true,
+    });
 
-  const docker = await confirm({
-    message: "Do you want to include Docker files to deploy?",
-    default: true,
-  });
+    const docker = await confirm({
+      message: "Do you want to include Docker files to deploy?",
+      default: true,
+    });
 
-  const database = await select({
-    message: "Select database:",
-    choices: [
-      { name: "sqlite", value: "sqlite" as const },
-      { name: "postgresql", value: "postgresql" as const },
-      { name: "inmemory", value: "inmemory" as const },
-    ],
-    default: "sqlite",
-  });
+    const database = await select({
+      message: "Select database:",
+      choices: [
+        { name: "sqlite", value: "sqlite" as const },
+        {
+          name: "postgresql",
+          value: "postgresql" as const,
+          description: "Requires Docker",
+        },
+        { name: "inmemory", value: "inmemory" as const },
+      ],
+      default: "sqlite",
+    });
 
-  const packageManager = await select({
-    message: "Select package manager:",
-    choices: [
-      { name: "npm", value: "npm" as const },
-      { name: "yarn", value: "yarn" as const },
-      { name: "pnpm", value: "pnpm" as const },
-    ],
-    default: "npm",
-  });
+    const packageManager = await select({
+      message: "Select package manager:",
+      choices: [
+        { name: "npm", value: "npm" as const },
+        { name: "yarn", value: "yarn" as const },
+        { name: "pnpm", value: "pnpm" as const },
+      ],
+      default: "npm",
+    });
 
-  const runSetup = await confirm({
-    message:
-      "Do you want to automatically run the setup commands after project creation?",
-    default: true,
-  });
+    const skipSetup = await confirm({
+      message:
+        "Do you want to skip the automatic setup commands after project creation?",
+      default: false,
+    });
 
-  options = {
-    projectName: projectName.trim(),
-    useAuth,
-    docker,
-    database,
-    packageManager,
-    runSetup,
-  };
+    options = {
+      projectName: projectName.trim(),
+      useAuth,
+      docker,
+      database,
+      packageManager,
+      skipSetup,
+    };
+  } else {
+    // Flag mode - validate name and use provided flags
+    projectName = providedName;
+
+    // Validate project name
+    if (!projectName || projectName.trim().length === 0) {
+      console.error(chalk.red("Project name is required"));
+      process.exit(1);
+    }
+    if (!/^[A-Z][a-zA-Z]*$/.test(projectName)) {
+      console.error(
+        chalk.red(
+          "Project name can only contain letters and must be in CamelCase (e.g., MyZestApp)"
+        )
+      );
+      process.exit(1);
+    }
+
+    console.log(chalk.gray("Using provided flags..."));
+
+    options = {
+      projectName: projectName.trim(),
+      useAuth: argv.auth as boolean,
+      docker: argv.docker as boolean,
+      database: argv.database as "sqlite" | "postgresql" | "inmemory",
+      packageManager: argv["package-manager"] as "npm" | "yarn" | "pnpm",
+      skipSetup: argv["no-setup"] as boolean,
+    };
+  }
   console.log("");
 
   // Create project with spinner
@@ -153,7 +232,7 @@ async function main() {
 
   const commandString = setupCommands.join(" && ");
 
-  if (options.runSetup) {
+  if (options.skipSetup !== true) {
     try {
       // Step 1: Install frontend dependencies
       await execWithSpinner(
@@ -206,6 +285,10 @@ async function main() {
         );
       }
 
+      // Step 7: Open solution
+      const solutionPath = path.join(projectPath, options.projectName + ".sln");
+      await execWithSpinner("Opening solution...", solutionPath);
+
       console.log(chalk.green.bold("\n🎉 Setup completed successfully!\n"));
     } catch (error) {
       console.error(chalk.red("\n❌ Error running setup commands:"));
@@ -219,14 +302,15 @@ async function main() {
     console.log(chalk.cyan("Next steps:"));
     console.log(chalk.gray("Copy and run this command:"));
     console.log(chalk.cyan(`  ${commandString}\n`));
-  }
 
-  console.log(
-    chalk.cyan(
-      "To have the best experience possible, open the solution in Visual Studio:"
-    )
-  );
-  console.log(chalk.gray(`  ${options.projectName}.sln\n`));
+    console.log(
+      chalk.cyan(
+        "To have the best experience possible, open the solution in Visual Studio:"
+      )
+    );
+    const solutionPath = path.join(projectPath, options.projectName + ".sln");
+    console.log(chalk.gray(`  ${solutionPath}`));
+  }
 }
 
 async function createProject(options: ProjectOptions) {

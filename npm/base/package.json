@@ -1,14 +1,14 @@
 {
   "name": "@ludovikallen/zest",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "license": "MIT",
   "author": "Ludovik Allen",
   "type": "module",
   "main": "index.ts",
   "peerDependencies": {
-    "@hey-api/client-fetch": "^0.12.0",
-    "zod": "^3.25.56"
+    "zod": "^3.25.56",
+    "@tanstack/react-query": "^5.81.5"
   },
   "dependencies": {
     "react": "^19.1.0"

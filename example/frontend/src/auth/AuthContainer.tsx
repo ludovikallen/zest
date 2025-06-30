@@ -6,28 +6,27 @@ const AuthContainer = () => {
   const [view, setView] = useState<"login" | "register">("login");
 
   return (
-    <div className="auth-container">
+    <div className="w-full max-w-sm mx-auto space-y-6">
       {view === "login" ? <Login /> : <Register />}
-
-      <div className="auth-toggle">
+      <div className="text-center">
         {view === "login" ? (
-          <p>
+          <p className="text-sm text-muted-foreground">
             Don't have an account?{" "}
             <button
-              className="link-button"
+              className="font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"
               onClick={() => setView("register")}
             >
-              Register now
+              Sign up
             </button>
           </p>
         ) : (
-          <p>
+          <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
             <button
-              className="link-button"
+              className="font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"
               onClick={() => setView("login")}
             >
-              Login
+              Sign in
             </button>
           </p>
         )}

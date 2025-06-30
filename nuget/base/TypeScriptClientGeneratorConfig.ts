@@ -1,6 +1,7 @@
 export default {
     plugins: [
         '@hey-api/typescript',
+        '@tanstack/react-query',
         'zod',
         {
             name: '@hey-api/client-fetch',
