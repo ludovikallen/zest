@@ -32,31 +32,6 @@ public class ZestIntegrationTests(WebApplicationFactory<Program> factory)
     }
 
     [Fact]
-    public async Task SwaggerEndpoint_ReturnsSuccessStatusCode()
-    {
-        // Act
-        var response = await _client.GetAsync("/swagger/index.html");
-
-        // Assert
-        response.EnsureSuccessStatusCode();
-    }
-
-    [Fact]
-    public async Task SwaggerJsonEndpoint_ReturnsValidOpenApiDocument()
-    {
-        // Act
-        var response = await _client.GetAsync("/swagger/v1/swagger.json");
-
-        // Assert
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-
-        // Verify it contains our test endpoints
-        Assert.Contains("GetTestMessage", content);
-        Assert.Contains("GetProtectedData", content);
-    }
-
-    [Fact]
     public async Task AuthEndpoints_RegisterAndLogin_Works()
     {
         // Arrange

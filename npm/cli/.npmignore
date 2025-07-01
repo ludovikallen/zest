@@ -1,0 +1,20 @@
+# Source files
+src/
+tsconfig.json
+
+# Development files
+.git/
+.gitignore
+.DS_Store
+*.log
+node_modules/
+
+# Test files
+test/
+tests/
+*.test.*
+*.spec.*
+
+# Documentation (keep README.md)
+docs/
+.github/

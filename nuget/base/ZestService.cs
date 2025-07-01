@@ -1,35 +1,39 @@
-﻿using System.Reflection;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using System.Reflection;
+using System.Security.Claims;
 
 namespace Zest;
 
 public static class ZestService
 {
-    public static IServiceCollection AddZest(this IServiceCollection services)
+    public static IServiceCollection AddZest<TDbContext>(this IServiceCollection services, Action<DbContextOptionsBuilder> options) where TDbContext : DbContext
     {
+        services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>
         {
             options.OperationFilter<AuthResponsesOperationFilter>();
             options.NonNullableReferenceTypesAsRequired();
         });
+        services.AddDbContext<TDbContext>(options);
 
         return services;
     }
 
-    public static IServiceCollection AddZestAuth(this IServiceCollection services, Action<DbContextOptionsBuilder> options)
+    public static IServiceCollection AddZestWithAuth<TDbContext>(this IServiceCollection services, Action<DbContextOptionsBuilder> options) where TDbContext : ZestAuthDbContext<TDbContext>
     {
+        services.AddZest<TDbContext>(options);
+
         services.AddAuthorization();
-        services.AddIdentityApiEndpoints<IdentityUser>().AddEntityFrameworkStores<ApplicationDbContext>();
-        services.AddDbContext<ApplicationDbContext>(options);
+        services.AddIdentityApiEndpoints<IdentityUser>().AddEntityFrameworkStores<TDbContext>();
 
         return services;
     }
@@ -61,11 +65,17 @@ public static class ZestService
                 });
         }
 
+        app.UseHttpsRedirection();
+
+        app.MapControllers();
+
         return app;
     }
 
-    public static WebApplication UseZestAuth(this WebApplication app)
+    public static WebApplication UseZestWithAuth(this WebApplication app)
     {
+        app.UseZest();
+
         app.MapIdentityApi<IdentityUser>();
 
         app.MapPost("/logout", async (SignInManager<IdentityUser> signInManager) =>
@@ -76,6 +86,8 @@ public static class ZestService
             .RequireAuthorization();
 
         app.MapGet("/account/status", (SignInManager<IdentityUser> signInManager, ClaimsPrincipal user) => Results.Ok((object?)signInManager.IsSignedIn(user)));
+
+        app.UseAuthorization();
 
         return app;
     }

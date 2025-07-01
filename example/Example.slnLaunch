@@ -3,12 +3,12 @@
     "Name": "dev",
     "Projects": [
       {
-        "Path": "Example.csproj",
+        "Path": "backend\\Example.csproj",
         "Action": "Start",
         "DebugTarget": "http"
       },
       {
-        "Path": "frontend\\example.client.esproj",
+        "Path": "frontend\\example.frontend.esproj",
         "Action": "Start",
         "DebugTarget": "localhost (Chrome)"
       }
