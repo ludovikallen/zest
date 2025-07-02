@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build the CLI
+        run: npm run build
+
       - name: Create NPM package
         run: npm pack
 

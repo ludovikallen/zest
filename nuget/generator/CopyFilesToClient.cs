@@ -17,17 +17,19 @@ namespace ZestGenerator
 
         protected override string GenerateFullPathToTool()
         {
-            return Environment.OSVersion.Platform == PlatformID.Win32NT ? "xcopy" : "cp";
+            return Environment.OSVersion.Platform == PlatformID.Win32NT ? "cmd \\c" : "sh -c";
         }
 
         protected override string GenerateCommandLineCommands()
         {
+            this.UseCommandProcessor = true;
+
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                return $"/y /i {NugetPath}\\config {TypeScriptClientOutputDirectory}\\config";
+                return $"xcopy /y /i {NugetPath}\\config {TypeScriptClientOutputDirectory}\\config && xcopy /y {NugetPath}\\tools\\TypeScriptClientGeneratorConfig.ts {TypeScriptClientOutputDirectory}\\";
             }
 
-            return $"-r {NugetPath}\\config\\ {TypeScriptClientOutputDirectory}";
+            return $"mkdir -p {TypeScriptClientOutputDirectory}\\config\\ && cp -a {NugetPath}\\config\\ {TypeScriptClientOutputDirectory}\\ && cp {NugetPath}\\tools\\TypeScriptClientGeneratorConfig.ts {TypeScriptClientOutputDirectory}\\";
         }
 
         protected override bool ValidateParameters()
