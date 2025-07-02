@@ -24,13 +24,13 @@ export async function createBackendFiles(
     </PropertyGroup>
 
     <ItemGroup>
-		<PackageReference Include="LudovikAllen.Zest" Version="0.0.3" />
+		<PackageReference Include="LudovikAllen.Zest" Version="0.0.8" />
       ${
         database === "inmemory"
           ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />'
           : database === "sqlite"
           ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />'
-          : ' <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />'
+          : '  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />'
       }
       ${
         database !== "inmemory" &&

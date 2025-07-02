@@ -1,6 +1,6 @@
 {
   "name": "@ludovikallen/create-zest",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "CLI tool to create Zest applications with .NET backend and React frontend",
   "keywords": [
     "zest",

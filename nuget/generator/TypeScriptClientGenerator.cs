@@ -30,7 +30,7 @@ public class TypeScriptClientGenerator : ToolTask
 
     protected override string GenerateCommandLineCommands()
     {
-        return $"--yes @hey-api/openapi-ts@0.73.0 --file {NugetPath}\\tools\\TypeScriptClientGeneratorConfig.ts --input {OpenApiFilePath} --output {TypeScriptClientOutputDirectory}\\client";
+        return $"--yes @hey-api/openapi-ts@0.73.0 --file TypeScriptClientGeneratorConfig.ts --input {OpenApiFilePath} --output {TypeScriptClientOutputDirectory}\\client";
     }
 
     protected override bool ValidateParameters()
