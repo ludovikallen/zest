@@ -33,8 +33,9 @@ export async function createBackendFiles(
           : '  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />'
       }
       ${
-        database !== "inmemory" &&
-        '  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6" />'
+        database !== "inmemory"
+          ? '  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6" />'
+          : ""
       }
     </ItemGroup>
 

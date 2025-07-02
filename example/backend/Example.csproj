@@ -8,8 +8,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-		<PackageReference Include="LudovikAllen.Zest" Version="0.0.3" />
+		<PackageReference Include="LudovikAllen.Zest" Version="0.0.8" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />
+      
     </ItemGroup>
 
 </Project>
