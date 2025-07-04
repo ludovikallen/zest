@@ -23,7 +23,7 @@ export async function createFrontendFiles(
       preview: "vite preview",
     },
     dependencies: {
-      "@ludovikallen/zest": "^0.0.2",
+      "@ludovikallen/zest": "^0.0.3",
       "@tailwindcss/vite": "^4.1.11",
       react: "^19.1.0",
       "react-dom": "^19.1.0",

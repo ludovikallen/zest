@@ -1,6 +1,6 @@
 {
   "name": "@ludovikallen/zest",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "license": "MIT",
   "author": "Ludovik Allen",
@@ -8,7 +8,9 @@
   "main": "index.ts",
   "peerDependencies": {
     "zod": "^3.25.56",
-    "@tanstack/react-query": "^5.81.5"
+    "@tanstack/react-query": "^5.81.5",
+    "@hookform/resolvers": "^5.1.1",
+    "react-hook-form": "^7.60.0"
   },
   "dependencies": {
     "react": "^19.1.0"

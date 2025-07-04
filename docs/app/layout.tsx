@@ -2,6 +2,7 @@ import { Footer, Layout, Navbar } from 'nextra-theme-docs'
 import { Banner, Head } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
 import 'nextra-theme-docs/style.css'
+import './global.css'
 import Logo from './icons/logo';
 
 
@@ -43,7 +44,10 @@ export default async function RootLayout({ children }) {
                 dark: "#000000",
                 light: "#FAF9F6"
             }}
-        />
+        >
+            <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+            <link rel="icon" href="/favicon.svg" type="image/x-icon" />
+        </Head>
         <body>
         <Layout
             navbar={navbar}
