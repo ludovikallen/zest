@@ -42,23 +42,13 @@ ENTRYPOINT ["dotnet", "Example.dll"]
 FROM example-base AS frontend-build
 WORKDIR /app
 
-# Create frontend structure and copy generated files if they exist
-RUN mkdir -p ./frontend/src/generated
-# Note: Copy generated files from backend build if they exist
-# This step may fail if no generated files exist, which is OK for initial builds
-
-# Copy frontend package files first for better layer caching
-COPY frontend/package*.json ./frontend/
+# Copy generated files from backend build stage
+COPY --from=backend-build /app/frontend/ ./frontend/
+RUN echo "VITE_API_BASE_URL=ZEST_API_BASE_URL" > /app/frontend/.env
 
 # Install dependencies
 WORKDIR /app/frontend
 RUN npm install
-
-# Copy rest of frontend source
-COPY frontend/ ./
-
-# Make sure we're in the frontend directory and build the application
-WORKDIR /app/frontend
 RUN npm run build
 
 # Production stage - nginx with built static files

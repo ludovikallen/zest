@@ -16,7 +16,11 @@ export async function createAdditionalFiles(
 
   // Create Docker files if Docker support is selected
   if (docker) {
-    await createDockerFiles(projectPath, projectName);
+    await createDockerFiles(
+      projectPath,
+      projectName,
+      options.database !== "inmemory"
+    );
   }
 
   // Create dev folder with PostgreSQL docker-compose if PostgreSQL is selected
@@ -233,7 +237,8 @@ playwright-report/
 
 async function createDockerFiles(
   projectPath: string,
-  projectName: string
+  projectName: string,
+  databaseMigration: boolean
 ): Promise<void> {
   const dockerPath = path.join(projectPath, "docker");
   await fs.ensureDir(dockerPath);
@@ -263,13 +268,28 @@ WORKDIR /app/backend
 # Restore and publish the application without frontend project reference
 RUN dotnet restore ${projectName}.csproj
 RUN dotnet publish ${projectName}.csproj -c Release -o /app/publish
+${
+  databaseMigration
+    ? `
+# Database migration stage
+FROM backend-build as db-migration
+WORKDIR /app/backend
 
+ARG CONNECTION_STRING
+# Install EF tools and run database migrations
+RUN dotnet tool install --global dotnet-ef --version 9.0.6
+RUN /root/.dotnet/tools/dotnet-ef database update --connection $CONNECTION_STRING --project Statsify.csproj
+`
+    : ""
+}
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 as backend
 WORKDIR /app
 
 # Copy the published application
-COPY --from=backend-build /app/publish .
+COPY --from=${
+    databaseMigration ? "db-migration" : "backend-build"
+  } /app/publish .
 
 # Expose the port
 EXPOSE 8080
@@ -287,6 +307,7 @@ WORKDIR /app
 
 # Copy generated files from backend build stage
 COPY --from=backend-build /app/frontend/ ./frontend/
+RUN echo "VITE_API_BASE_URL=ZEST_API_BASE_URL" > /app/frontend/.env
 
 # Install dependencies
 WORKDIR /app/frontend
@@ -356,6 +377,11 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
       target: backend
+      ${
+        databaseMigration
+          ? "args:\n        CONNECTION_STRING: ${DATABASE_CONNECTION_STRING:-}"
+          : ""
+      }
     container_name: ${projectName.toLowerCase()}-backend
     environment:
       BACKEND_PORT: \${BACKEND_PORT:-8080}
@@ -379,7 +405,7 @@ services:
       BASE_URL: \${BASE_URL:-http://localhost}
       BACKEND_PORT: \${BACKEND_PORT:-8080}
       NGINX_API_PATH_SEGMENT: \${NGINX_API_PATH_SEGMENT:-api}
-      ZEST_API_BASE_URL: \${ZEST_API_BASE_URL:-\${BASE_URL:-http://localhost}/\${NGINX_API_PATH_SEGMENT:-api}}
+      ZEST_API_BASE_URL: \${BASE_URL:-http://localhost}/\${NGINX_API_PATH_SEGMENT:-api}
       NGINX_LISTEN_PORT: \${NGINX_LISTEN_PORT:-80}
     ports:
       - "\${NGINX_LISTEN_PORT:-80}:\${NGINX_LISTEN_PORT:-80}"
