@@ -73,10 +73,16 @@ async function main() {
         type: "boolean",
         default: false,
       });
+      yargs.option("todo", {
+        describe: "Include todo functionality with sample CRUD API",
+        type: "boolean",
+        default: false,
+      });
     })
     .usage("Usage: $0 [name] [options]")
     .example("$0", "Interactive mode")
-    .example("$0 MyApp", "Create MyApp with default settings")
+    .example("$0 MyApp", "Create empty MyApp with default settings")
+    .example("$0 MyApp --todo", "Create MyApp with todo functionality")
     .example(
       "$0 MyApp --auth --database postgresql",
       "Create MyApp with custom options"
@@ -120,6 +126,12 @@ async function main() {
       default: true,
     });
 
+    const todo = await confirm({
+      message:
+        "Do you want to include todo functionality with sample CRUD API?",
+      default: false,
+    });
+
     const docker = await confirm({
       message: "Do you want to include Docker files to deploy?",
       default: true,
@@ -155,9 +167,12 @@ async function main() {
       default: false,
     });
 
+    console.log("");
+
     options = {
       projectName: projectName.trim(),
       useAuth,
+      todo,
       docker,
       database,
       packageManager,
@@ -181,18 +196,16 @@ async function main() {
       process.exit(1);
     }
 
-    console.log(chalk.gray("Using provided flags..."));
-
     options = {
       projectName: projectName.trim(),
       useAuth: argv.auth as boolean,
+      todo: argv.todo as boolean,
       docker: argv.docker as boolean,
       database: argv.database as "sqlite" | "postgresql" | "inmemory",
       packageManager: argv["package-manager"] as "npm" | "yarn" | "pnpm",
       skipSetup: argv["no-setup"] as boolean,
     };
   }
-  console.log("");
 
   // Create project with spinner
   const projectSpinner = ora("Creating your Zest application...").start();

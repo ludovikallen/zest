@@ -7,7 +7,7 @@ export async function createBackendFiles(
   projectPath: string,
   options: ProjectOptions
 ): Promise<void> {
-  const { projectName, database, useAuth } = options;
+  const { projectName, database, useAuth, todo } = options;
   const backendPath = path.join(projectPath, "backend");
 
   // Create backend directory
@@ -47,7 +47,8 @@ export async function createBackendFiles(
   );
 
   // Create Program.cs
-  const programContent = `using ${projectName};
+  const programContent = todo
+    ? `using ${projectName};
 using ${projectName}.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -64,17 +65,32 @@ var app = builder.Build();
 ${getUseZestLine(useAuth)}
 
 app.Run();
+`
+    : `using ${projectName};
+using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using Zest;
+
+var builder = WebApplication.CreateBuilder(args);
+
+${getAddZestLine(useAuth, database, projectName)}
+
+var app = builder.Build();
+
+${getUseZestLine(useAuth)}
+
+app.Run();
 `;
 
   await fs.writeFile(path.join(backendPath, "Program.cs"), programContent);
 
-  await createControllers(backendPath, projectName, useAuth);
+  if (todo) {
+    await createControllers(backendPath, projectName, useAuth);
+    await createEntities(backendPath, projectName, useAuth);
+    await createRepositories(backendPath, projectName, useAuth);
+  }
 
-  await createEntities(backendPath, projectName, useAuth);
-
-  await createRepositories(backendPath, projectName, useAuth);
-
-  await createApplicationDbContext(backendPath, projectName, useAuth);
+  await createApplicationDbContext(backendPath, projectName, useAuth, todo);
 
   // Create Properties directory and launchSettings.json
   await fs.ensureDir(path.join(backendPath, "Properties"));
@@ -200,11 +216,15 @@ EndGlobal
 async function createApplicationDbContext(
   projectPath: string,
   projectName: string,
-  useAuth: boolean
+  useAuth: boolean,
+  todo?: boolean
 ): Promise<void> {
   let applicationDbContexContent;
-  if (!useAuth) {
-    applicationDbContexContent = `using ${projectName}.Entities;
+
+  if (todo) {
+    // Project with Todo entities
+    if (!useAuth) {
+      applicationDbContexContent = `using ${projectName}.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ${projectName};
@@ -223,8 +243,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     }
 }
 `;
-  } else {
-    applicationDbContexContent = `using ${projectName}.Entities;
+    } else {
+      applicationDbContexContent = `using ${projectName}.Entities;
 using Microsoft.EntityFrameworkCore;
 using Zest;
 
@@ -244,6 +264,39 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     }
 }
 `;
+    }
+  } else {
+    // Empty project without Todo entities
+    if (!useAuth) {
+      applicationDbContexContent = `using Microsoft.EntityFrameworkCore;
+
+namespace ${projectName};
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+{
+    // Add your DbSets here
+    
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+    }
+}
+`;
+    } else {
+      applicationDbContexContent = `using Microsoft.EntityFrameworkCore;
+using Zest;
+
+namespace ${projectName};
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : ZestAuthDbContext<ApplicationDbContext>(options)
+{
+    // Add your DbSets here
+    
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+    }
+}
+`;
+    }
   }
 
   await fs.writeFile(

@@ -5,4 +5,5 @@ export interface ProjectOptions {
   database: "inmemory" | "sqlite" | "postgresql";
   packageManager: "npm" | "yarn" | "pnpm";
   skipSetup?: boolean;
+  todo?: boolean;
 }
