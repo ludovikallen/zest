@@ -6,7 +6,7 @@ export async function createFrontendFiles(
   projectPath: string,
   options: ProjectOptions
 ): Promise<void> {
-  const { projectName, packageManager, useAuth, docker } = options;
+  const { projectName, packageManager, useAuth, docker, todo } = options;
   const frontendPath = path.join(projectPath, "frontend");
 
   await fs.ensureDir(frontendPath);
@@ -23,7 +23,7 @@ export async function createFrontendFiles(
       preview: "vite preview",
     },
     dependencies: {
-      "@ludovikallen/zest": "^0.0.2",
+      "@ludovikallen/zest": "^0.0.3",
       "@tailwindcss/vite": "^4.1.11",
       react: "^19.1.0",
       "react-dom": "^19.1.0",
@@ -86,7 +86,7 @@ export default defineConfig({
   await createIndexHtml(frontendPath, projectName);
 
   // Create src directory and files
-  await createSourceFiles(frontendPath, projectName, useAuth);
+  await createSourceFiles(frontendPath, projectName, useAuth, todo);
 
   // Create public directory
   await createPublicFiles(frontendPath);
@@ -195,7 +195,8 @@ async function createIndexHtml(
 async function createSourceFiles(
   frontendPath: string,
   projectName: string,
-  useAuth: boolean
+  useAuth: boolean,
+  todo?: boolean
 ): Promise<void> {
   const srcPath = path.join(frontendPath, "src");
   await fs.ensureDir(srcPath);
@@ -214,7 +215,7 @@ createRoot(document.getElementById('root')!).render(
   await fs.writeFile(path.join(srcPath, "Main.tsx"), mainTsxContent);
 
   // Create App.tsx based on features
-  await createAppComponent(srcPath, projectName, useAuth);
+  await createAppComponent(srcPath, projectName, useAuth, todo);
 
   // Create CSS files
   await createStyleFiles(srcPath);
@@ -228,7 +229,7 @@ createRoot(document.getElementById('root')!).render(
     await createAuthFiles(srcPath);
   }
 
-  await createComponents(srcPath, useAuth);
+  await createComponents(srcPath, useAuth, todo);
 
   await createContexts(srcPath);
 }
@@ -236,66 +237,132 @@ createRoot(document.getElementById('root')!).render(
 async function createAppComponent(
   srcPath: string,
   projectName: string,
-  useAuth: boolean
+  useAuth: boolean,
+  todo?: boolean
 ): Promise<void> {
   let appTsxContent = "";
 
-  if (useAuth) {
-    appTsxContent = `import AuthContainer from './auth/AuthContainer'
+  if (todo) {
+    // Project with todo functionality
+    if (useAuth) {
+      appTsxContent = `import AuthContainer from './auth/AuthContainer'
 import TodoPage from './components/TodoPage'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ThemeToggle } from './components/ThemeToggle'
 import { useAuth, AuthProvider } from './auth/Auth'
 
-function AppContent() {
-    const { state } = useAuth();
-
-    return state.isAuthenticated ? <TodoPage /> : <AuthContainer />;
-}
-
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-          <ThemeToggle />
-          <div className="w-full max-w-md space-y-8">
-            <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">${projectName} App</h1>
-              <p className="t#t-muted-foreground">Welcome to your todo application</p>
+    <AuthProvider>
+      <ThemeProvider>
+        <div className="min-h-screen bg-background">
+          <header className="border-b border-border">
+            <div className="container mx-auto flex items-center justify-between p-4">
+              <h1 className="text-2xl font-bold text-foreground">${projectName}</h1>
+              <ThemeToggle />
             </div>
-            <AppContent />
-          </div>
+          </header>
+          <main className="container mx-auto p-4">
+            <AuthContainer>
+              <TodoPage />
+            </AuthContainer>
+          </main>
         </div>
-      </AuthProvider>
-    </ThemeProvider>
-  );
+      </ThemeProvider>
+    </AuthProvider>
+  )
 }
 
-export default App;`;
-  } else {
-    appTsxContent = `import TodoPage from './components/TodoPage'
+export default App
+`;
+    } else {
+      appTsxContent = `import TodoPage from './components/TodoPage'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ThemeToggle } from './components/ThemeToggle'
 
 function App() {
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-        <ThemeToggle />
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">${projectName} App</h1>
-            <p className="t#t-muted-foreground">Welcome to your todo application</p>
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-border">
+          <div className="container mx-auto flex items-center justify-between p-4">
+            <h1 className="text-2xl font-bold text-foreground">${projectName}</h1>
+            <ThemeToggle />
           </div>
+        </header>
+        <main className="container mx-auto p-4">
           <TodoPage />
-        </div>
+        </main>
       </div>
     </ThemeProvider>
-  );
+  )
 }
 
-export default App;`;
+export default App
+`;
+    }
+  } else if (useAuth) {
+    // Empty project with auth
+    appTsxContent = `import AuthContainer from './auth/AuthContainer'
+import { ThemeProvider } from './contexts/ThemeContext'
+import { ThemeToggle } from './components/ThemeToggle'
+import { useAuth, AuthProvider } from './auth/Auth'
+
+function App() {
+  return (
+    <AuthProvider>
+      <ThemeProvider>
+        <div className="min-h-screen bg-background">
+          <header className="border-b border-border">
+            <div className="container mx-auto flex items-center justify-between p-4">
+              <h1 className="text-2xl font-bold text-foreground">${projectName}</h1>
+              <ThemeToggle />
+            </div>
+          </header>
+          <main className="container mx-auto p-4">
+            <AuthContainer>
+              <div className="text-center py-16">
+                <h2 className="text-3xl font-bold text-foreground mb-4">Welcome to your Zest app!</h2>
+                <p className="text-muted-foreground">Start building your amazing application.</p>
+              </div>
+            </AuthContainer>
+          </main>
+        </div>
+      </ThemeProvider>
+    </AuthProvider>
+  )
+}
+
+export default App
+`;
+  } else {
+    // Empty project without auth
+    appTsxContent = `import { ThemeProvider } from './contexts/ThemeContext'
+import { ThemeToggle } from './components/ThemeToggle'
+
+function App() {
+  return (
+    <ThemeProvider>
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-border">
+          <div className="container mx-auto flex items-center justify-between p-4">
+            <h1 className="text-2xl font-bold text-foreground">${projectName}</h1>
+            <ThemeToggle />
+          </div>
+        </header>
+        <main className="container mx-auto p-4">
+          <div className="text-center py-16">
+            <h2 className="text-3xl font-bold text-foreground mb-4">Welcome to your Zest app!</h2>
+            <p className="text-muted-foreground">Start building your amazing application.</p>
+          </div>
+        </main>
+      </div>
+    </ThemeProvider>
+  )
+}
+
+export default App
+`;
   }
 
   await fs.writeFile(path.join(srcPath, "App.tsx"), appTsxContent);
@@ -899,13 +966,17 @@ async function createEnvironmentFiles(
 
 async function createComponents(
   srcPath: string,
-  useAuth: boolean
+  useAuth: boolean,
+  todo?: boolean
 ): Promise<void> {
   const componentsPath = path.join(srcPath, "components");
   await fs.ensureDir(componentsPath);
 
   await createThemeToggle(componentsPath);
-  await createTodoPage(componentsPath, useAuth);
+
+  if (todo) {
+    await createTodoPage(componentsPath, useAuth);
+  }
 }
 
 async function createThemeToggle(componentsPath: string): Promise<void> {

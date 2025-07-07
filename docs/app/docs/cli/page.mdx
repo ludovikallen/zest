@@ -1,0 +1,160 @@
+# Creating a Zest Application with the CLI
+
+The **Create Zest CLI** is a powerful command-line tool that helps you quickly scaffold new Zest applications with a .NET backend and React frontend. It provides an interactive setup experience with customizable options for authentication, databases, and additional features.
+
+## Quick Start
+
+### Interactive Mode (Recommended)
+
+The easiest way to create a new Zest application is using the interactive mode:
+
+```bash
+npm create @ludovikallen/zest
+```
+
+This will launch an interactive wizard that will guide you through:
+- Naming your project (must be CamelCase, e.g., `MyZestApp`)
+- Choosing whether to include authentication
+- Adding todo functionality with sample CRUD API
+- Including Docker files for deployment
+- Selecting your database type
+- Choosing your preferred package manager
+- Deciding whether to skip automatic setup
+
+### Getting Help
+
+```bash
+npm create @ludovikallen/zest --help
+```
+
+For more information, visit the [Zest GitHub repository](https://github.com/ludovikallen/zest).
+
+### Command Line Mode
+
+For faster creation with predefined options:
+
+```bash
+npm create @ludovikallen/zest MyZestApp
+```
+
+You can also combine this with various flags for full customization:
+
+```bash
+npm create @ludovikallen/zest MyZestApp --auth --todo --database postgresql --package-manager pnpm
+```
+
+## CLI Options
+
+| Option | Description | Choices | Default |
+|--------|-------------|---------|---------|
+| `--auth` | Include authentication system | `true`/`false` | `false` |
+| `--todo` | Include todo functionality with sample CRUD API | `true`/`false` | `false` |
+| `--docker` | Include Docker files for deployment | `true`/`false` | `true` |
+| `--database` | Database type | `sqlite`, `postgresql`, `inmemory` | `sqlite` |
+| `--package-manager` | Package manager | `npm`, `yarn`, `pnpm` | `npm` |
+| `--no-setup` | Skip automatic setup commands | `true`/`false` | `false` |
+| `--help` | Show help information | - | - |
+
+## What Gets Created
+
+The CLI generates a complete full-stack application with the following structure:
+
+```
+MyZestApp/
+├── backend/                    # .NET Web API
+│   ├── Controllers/           # API controllers
+│   ├── Entities/             # Data models
+│   ├── Repositories/         # Data access layer
+│   ├── Program.cs            # Application entry point
+│   └── MyZestApp.csproj      # .NET project file
+├── frontend/                  # React application
+│   ├── src/                  # Source code
+│   ├── public/               # Static assets
+│   ├── package.json          # Frontend dependencies
+│   └── vite.config.ts        # Vite configuration
+├── dev/                      # Development tools
+│   └── docker-compose.yml    # Database services
+├── docker/                   # Production deployment
+│   ├── Dockerfile           # Container definition
+│   └── docker-compose.yml   # Production services
+└── MyZestApp.sln            # Visual Studio solution
+```
+
+## Generated Features
+
+### Core Stack
+- **Backend**: .NET 8 Web API with Entity Framework Core
+- **Frontend**: React 19 with TypeScript and Vite
+- **Styling**: Tailwind CSS with dark/light theme support
+- **Type Safety**: Full TypeScript integration between frontend and backend
+
+### Optional Features
+
+#### Authentication (`--auth`)
+- JWT-based authentication system
+- User registration and login endpoints
+- Protected routes and middleware
+- Frontend auth context and hooks
+
+#### Todo Functionality (`--todo`)
+- Sample CRUD API for todo items
+- Complete todo management frontend
+- Entity Framework models and repositories
+- Demonstrates best practices for API development
+
+#### Database Options
+- **SQLite** (`--database sqlite`): File-based database, perfect for development
+- **PostgreSQL** (`--database postgresql`): Production-ready database with Docker support
+- **In-Memory** (`--database inmemory`): Temporary database for prototyping
+
+#### Docker Support (`--docker`)
+- Development Docker Compose files for databases
+- Production-ready Dockerfile and Docker Compose
+- Nginx reverse proxy configuration
+- Environment-specific configurations
+
+## Automatic Setup
+
+By default, the CLI will automatically run setup commands after project creation:
+
+1. **Install frontend dependencies** using your chosen package manager
+2. **Start Docker services** (if using PostgreSQL)
+3. **Restore .NET packages**
+4. **Install Entity Framework tools** globally
+5. **Create initial database migration** (if not using in-memory database)
+6. **Update database** with initial schema
+7. **Open the solution** in your selected IDE
+
+You can skip this automatic setup with the `--no-setup` flag if you prefer to run commands manually.
+
+## Troubleshooting
+
+**Project name validation error**
+- Project names must be in CamelCase (e.g., `MyZestApp`)
+- Only letters are allowed, no numbers or special characters
+
+**Directory already exists**
+- Choose a different project name or remove the existing directory
+
+**Docker not running (PostgreSQL)**
+- Ensure Docker Desktop is installed and running
+- For development, you can switch to SQLite instead
+
+**Entity Framework tools not found**
+- Run `dotnet tool install --global dotnet-ef`
+- Ensure you have .NET 8 SDK installed
+
+**Port conflicts**
+- Backend runs on port 7158, frontend on 5173, and database on 5432
+- Change ports in `launchSettings.json` (backend) or `vite.config.ts` (frontend) or in `docker-compose.yml` (if using PostgreSQL)
+
+## Next Steps
+
+After creating your project:
+
+1. **Explore the code** - Check out the generated controllers, components, and configurations
+2. **Run the application** - Start both backend and frontend to see your app in action  
+3. **Customize** - Modify the generated code to fit your specific requirements
+4. **Deploy** - Use the included Docker files for production deployment
+
+Happy coding with Zest! 🚀

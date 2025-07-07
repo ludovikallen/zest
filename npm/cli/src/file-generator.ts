@@ -33,7 +33,7 @@ async function createReadme(
   projectPath: string,
   options: ProjectOptions
 ): Promise<void> {
-  const { projectName, docker } = options;
+  const { projectName, docker, todo } = options;
 
   const readmeContent = `# ${projectName}
 
@@ -42,7 +42,7 @@ A Zest application with .NET backend and React frontend.
 ## Features
 
 ${options.useAuth ? "- ✅ Authentication" : "- ❌ Authentication"}
-- ✅ Weather API Example
+${todo ? "- ✅ Todo API Example" : "- ❌ Todo API Example"}
 ${docker ? "- ✅ Docker Support" : "- ❌ Docker Support"}
 
 ## Getting Started

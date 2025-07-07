@@ -1,0 +1,552 @@
+import { Callout } from 'nextra/components'
+import { Tabs } from 'nextra/components'
+
+# Installation & Setup
+
+This guide will walk you through setting up Zest in your existing .NET and React with Vite projects, or creating a new project from scratch.
+
+## Prerequisites
+
+Before you begin, make sure you have the following installed:
+
+- **.NET 9 SDK** or later
+- **Node.js** (version 18 or later)
+- **npm**, **yarn**, or **pnpm**
+- **Visual Studio** or **Visual Studio Code** (recommended)
+
+## Quick Start with CLI
+
+The fastest way to get started is using the Create Zest CLI:
+
+```bash
+npm create @ludovikallen/zest MyProject
+```
+
+This will create a complete project with all necessary configurations. If you prefer to set up Zest manually in an existing project, continue with the manual setup below.
+
+## Manual Setup
+
+### 1. Backend Setup (.NET)
+
+#### Configure Your Project File
+
+Update your `.csproj` file to include the `FrontendSourcePath` property and the necessary package references:
+<Tabs items={['Sqlite', 'PostgreSQL', 'In-Memory']}>
+  <Tabs.Tab>
+```xml {6, 10, 11}
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <FrontendSourcePath>$(MSBuildProjectDirectory)\..\frontend\src</FrontendSourcePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LudovikAllen.Zest" Version="0.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />
+  </ItemGroup>
+</Project>
+```
+  </Tabs.Tab>
+    <Tabs.Tab>
+```xml {6, 10, 11}
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <FrontendSourcePath>$(MSBuildProjectDirectory)\..\frontend\src</FrontendSourcePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LudovikAllen.Zest" Version="0.0.8" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.5" />
+  </ItemGroup>
+</Project>
+```
+  </Tabs.Tab>
+    <Tabs.Tab>
+```xml {6, 10, 11}
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <FrontendSourcePath>$(MSBuildProjectDirectory)\..\frontend\src</FrontendSourcePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LudovikAllen.Zest" Version="0.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />
+  </ItemGroup>
+</Project>
+```
+  </Tabs.Tab>
+</Tabs>
+
+<Callout>The Zest package will automatically generate TypeScript client code in your frontend's source path `/generated` folder when you build your .NET project.</Callout>
+
+#### Create Your DbContext
+
+Update or create your `ApplicationDbContext` class. This is where you define your database context and models.
+
+<Tabs items={['Without Auth', 'With Auth']}>
+  <Tabs.Tab>
+```csharp
+using Microsoft.EntityFrameworkCore;
+
+public class ApplicationDbContext : DbContext
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    {
+    }
+
+    // Add your DbSets here
+    // public DbSet<YourEntity> YourEntities { get; set; }
+}
+```
+</Tabs.Tab>
+  <Tabs.Tab>
+  ```csharp
+using Microsoft.EntityFrameworkCore;
+using Zest;
+
+public class ApplicationDbContext : ZestAuthDbContext<ApplicationDbContext>
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    {
+    }
+
+    // Add your DbSets here
+    // public DbSet<YourEntity> YourEntities { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        // Configure your entities here if needed
+        
+        base.OnModelCreating(builder); // Important: Call base method for auth
+    }
+}
+```
+  </Tabs.Tab>
+</Tabs>
+
+#### Configure Program.cs
+
+Update your `Program.cs` file for your given setup. This is where you configure services and middleware.
+
+<Tabs items={['Without Auth', 'With Auth']}>
+  <Tabs.Tab>
+    <Tabs items={['Sqlite', 'PostgreSQL', 'In-Memory']}>
+      <Tabs.Tab>
+```csharp
+using Microsoft.EntityFrameworkCore;
+using YourNamespace; // Replace with your actual namespace
+using Zest;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add your services here
+// builder.Services.AddScoped<IYourService, YourService>();
+
+// Add Zest services
+builder.Services.AddZest<ApplicationDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")),  b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name!));
+
+var app = builder.Build();
+
+// Configure Zest middleware
+app.UseZest();
+
+app.Run();
+```
+      </Tabs.Tab>
+      <Tabs.Tab>
+```csharp
+using Microsoft.EntityFrameworkCore;
+using YourNamespace; // Replace with your actual namespace
+using Zest;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add your services here
+// builder.Services.AddScoped<IYourService, YourService>();
+
+// Add Zest services
+builder.Services.AddZest<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")),  b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name!));
+
+var app = builder.Build();
+
+// Configure Zest middleware
+app.UseZest();
+
+app.Run();
+```
+      </Tabs.Tab>
+
+      <Tabs.Tab>
+```csharp
+using Microsoft.EntityFrameworkCore;
+using YourNamespace; // Replace with your actual namespace
+using Zest;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add your services here
+// builder.Services.AddScoped<IYourService, YourService>();
+
+// Add Zest services
+builder.Services.AddZest<ApplicationDbContext>(options => options.UseInMemoryDatabase(Assembly.GetExecutingAssembly().GetName().Name!));
+
+var app = builder.Build();
+
+// Configure Zest middleware
+app.UseZest();
+
+app.Run();
+```
+      </Tabs.Tab>
+    </Tabs>
+  </Tabs.Tab>
+      <Tabs items={['Sqlite', 'PostgreSQL', 'In-Memory']}>
+      <Tabs.Tab>
+```csharp
+using Microsoft.EntityFrameworkCore;
+using YourNamespace; // Replace with your actual namespace
+using Zest;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add your services here
+// builder.Services.AddScoped<IYourService, YourService>();
+
+// Add Zest services
+builder.Services.AddZestWithAuth<ApplicationDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")),  b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name!));
+
+var app = builder.Build();
+
+// Configure Zest middleware
+app.UseZestWithAuth();
+
+app.Run();
+```
+      </Tabs.Tab>
+      <Tabs.Tab>
+```csharp
+using Microsoft.EntityFrameworkCore;
+using YourNamespace; // Replace with your actual namespace
+using Zest;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add your services here
+// builder.Services.AddScoped<IYourService, YourService>();
+
+// Add Zest services
+builder.Services.AddZestWithAuth<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")),  b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name!));
+
+var app = builder.Build();
+
+// Configure Zest middleware
+app.UseZestWithAuth();
+
+app.Run();
+```
+      </Tabs.Tab>
+
+      <Tabs.Tab>
+```csharp
+using Microsoft.EntityFrameworkCore;
+using YourNamespace; // Replace with your actual namespace
+using Zest;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add your services here
+// builder.Services.AddScoped<IYourService, YourService>();
+
+// Add Zest services
+builder.Services.AddZestWithAuth<ApplicationDbContext>(options => options.UseInMemoryDatabase(Assembly.GetExecutingAssembly().GetName().Name!));
+
+var app = builder.Build();
+
+// Configure Zest middleware
+app.UseZestWithAuth();
+
+app.Run();
+```
+      </Tabs.Tab>
+    </Tabs>
+  <Tabs.Tab>
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using YourNamespace; // Replace with your actual namespace
+using Zest;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add your services here
+// builder.Services.AddScoped<IYourService, YourService>();
+
+// Add Zest services with authentication
+builder.Services.AddZestWithAuth<ApplicationDbContext>(options => 
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    // OR other database providers as shown above
+
+var app = builder.Build();
+
+// Configure Zest middleware with authentication
+app.UseZestWithAuth();
+
+app.Run();
+```
+</Tabs.Tab>
+</Tabs>
+
+#### Configure CORS
+
+Add CORS configuration to your `appsettings.json`:
+
+```json {4,5}
+{
+  "Cors": {
+    "AllowedOrigins": [
+      "http://localhost:5173",
+      "https://localhost:5173"
+    ]
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Your connection string here"
+  }
+}
+```
+
+For development with Vite (default React dev server), use port `5173`. Adjust as needed for your frontend setup.
+
+### 2. Frontend Setup (React)
+
+#### Install Required Packages
+
+Add the Zest npm package and its peer dependencies to your React project:
+
+<Tabs items={['npm', 'yarn', 'pnpm']}>
+<Tabs.Tab>
+```bash
+npm install @ludovikallen/zestm
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```bash
+yarn add @ludovikallen/zest
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```bash
+pnpm add @ludovikallen/zest
+```
+</Tabs.Tab>
+</Tabs>
+
+#### Adding Vite environment variables
+Create a `.env.development` file in your React project root and add the following:
+
+```env
+VITE_API_BASE_URL=http://localhost:5226
+```
+
+#### Generated Code Integration
+
+When you build your .NET project, Zest automatically generates TypeScript client code in your frontend's source path `/generated` folder. This includes:
+
+- **API client functions** for all your controllers
+- **TypeScript types** for your C# models
+- **React Query hooks** for easy data fetching
+- **Zod schemas** for validation
+
+#### Using Generated API Client
+
+Import and use the generated API functions in your React components:
+
+```tsx
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { getUserData, createUser } from './generated/api';
+
+function UserComponent() {
+  // Using generated React Query hooks
+  const { data: users, isLoading } = useQuery({
+    queryKey: ['users'],
+    queryFn: getUserData
+  });
+
+  const createUserMutation = useMutation({
+    mutationFn: createUser,
+    onSuccess: () => {
+      // Refresh user list
+    }
+  });
+
+  if (isLoading) return <div>Loading...</div>;
+
+  return (
+    <div>
+      {/* Your component JSX */}
+    </div>
+  );
+}
+```
+
+#### Query Client Setup and Authentication
+
+Add the Query Client and authentication provider to your React app:
+
+```tsx {2-4, 6, 10, 11, 13, 14}
+import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@ludovikallen/zest';
+import { authService } from './generated/api';
+
+const queryClient = new QueryClient();
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider authService={authService}>
+        {/* Your app components */}
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;
+```
+
+Then use authentication in your components:
+
+```tsx
+import { useAuth } from '@ludovikallen/zest';
+
+function LoginComponent() {
+  const { state, login, logout, register } = useAuth();
+
+  if (state.loading) return <div>Loading...</div>;
+
+  if (state.isAuthenticated) {
+    return (
+      <div>
+        <button onClick={() => logout()}>Logout</button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <button onClick={() => login('user@example.com', 'password')}>
+        Login
+      </button>
+      <button onClick={() => register('user@example.com', 'password')}>
+        Register
+      </button>
+    </div>
+  );
+}
+```
+
+## Database Setup
+
+### Entity Framework Migrations
+
+If you're using a persistent database (not in-memory), set up Entity Framework migrations:
+
+```bash
+# Install EF Core tools globally (if not already installed)
+dotnet tool install --global dotnet-ef
+
+# Create new migration
+dotnet ef migrations add InitialCreate
+
+# Update database
+dotnet ef database update
+```
+
+### Connection Strings
+
+Configure your database connection in `appsettings.json`:
+
+<Tabs items={['SQLite', 'PostgreSQL']}>
+  <Tabs.Tab>
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Data Source=app.db"
+  }
+}
+```
+</Tabs.Tab>
+  <Tabs.Tab>
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Database=yourappname;Username=postgres;Password=yourpassword"
+  }
+}
+```
+</Tabs.Tab>
+</Tabs>
+
+## Development Workflow
+
+### 1. Start Your Backend
+
+```bash
+cd backend
+dotnet run
+```
+
+Your API will be available at `https://localhost:7158` (or the port configured in your `launchSettings.json`).
+
+### 2. Start Your Frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+Your React app will be available at `http://localhost:5173`.
+
+### 3. Build Process
+
+When you build your .NET project, Zest automatically:
+
+1. **Generates OpenAPI/Swagger specification** from your controllers
+2. **Creates TypeScript client and types** from your C# controllers and models
+
+## Troubleshooting
+
+### Common Issues
+
+**"FrontendSourcePath is not set" error**
+- Ensure you've added the `<FrontendSourcePath>` property to your `.csproj` file
+- Verify the path exists and points to your React `src` folder
+
+**Generated files not appearing**
+- Build your .NET project to trigger code generation
+- Check that the `FrontendSourcePath` directory exists
+- Verify you've installed the Zest NuGet package
+
+**CORS errors**
+- Check your `appsettings.json` CORS configuration
+- Ensure your frontend URL is in the `AllowedOrigins` array
+- Verify you're calling `app.UseZest()` or `app.UseZestWithAuth()` in `Program.cs`
+
+**Authentication not working**
+- Ensure you're using `ZestAuthDbContext` as your base class
+- Verify you're calling `AddZestWithAuth` and `UseZestWithAuth`
+- Check that Entity Framework migrations include Identity tables
+
+### Getting Help
+
+For additional support:
+- Check the [example project](https://github.com/ludovikallen/zest/tree/main/example) for reference
+- Review the [API documentation](/docs/api)
+- Submit issues on [GitHub](https://github.com/ludovikallen/zest/issues)

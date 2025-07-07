@@ -1,2 +1,3955 @@
-# Getting Started
-start
+import { Callout } from 'nextra/components'
+import { FileTree } from 'nextra/components'
+
+# Getting Started with Zest
+
+Welcome to **Zest**, a full-stack framework designed to help you build modern web applications quickly and productively using .NET and React. Whether you're experienced or new to these technologies, Zest enables you to create typesafe, end-to-end applications with minimal boilerplate and a great developer experience.
+
+## 1. What You'll Learn
+
+- Creating a new Zest application and connecting to a database
+- Understanding the general layout and architecture (backend & frontend)
+- Leveraging Zest’s built-in features for productivity and type safety
+
+## 2. Zest Principles
+
+Zest is built with developer productivity and modern web practices in mind:
+- **Fun:** Enjoyable, streamlined development
+- **Type Safety:** End-to-end typing from backend to frontend
+- **Great Developer Experience:** Hot reload, automatic API client, integrated tooling
+
+## 3. Creating a New Zest App
+
+We're going to build a project called `Store` - a simple application that demonstrates several of Zest's built-in features including CRUD operations, authentication, and modern frontend development.
+
+> Any commands prefaced with a dollar sign `$` should be run in the terminal.
+
+### Prerequisites
+
+For this project, you will need:
+
+- Node.js 18 or later
+- .NET SDK 9.0
+- npm, yarn, or pnpm (based on preference)
+- Docker (optional, for PostgreSQL)
+- Visual Studio (recommended for best development experience)
+
+Let's verify the correct versions are installed. To display the current versions, open a terminal and run the following:
+
+```bash copy=false
+$ node --version
+v20.11.0
+
+$ dotnet --version
+9.0.0
+```
+
+### Creating Your First Zest App
+
+Zest comes with a powerful CLI tool to make project creation easier. Run `npm create @ludovikallen/zest --help` to see all available options.
+
+`npm create @ludovikallen/zest` generates the foundation of a fresh Zest application for you with both .NET backend and React frontend configured, so let's start there.
+
+To create our store application, run the following command in your terminal:
+
+```bash
+$ npm create @ludovikallen/zest Store --database=postgresql
+```
+<Callout>The CLI will create your project, install dependencies and open the project in your code editor.</Callout>
+
+### Directory Structure
+
+After creating your Zest application, you'll see a directory structure like this:
+
+<FileTree>
+  <FileTree.Folder name="Store" defaultOpen>
+    <FileTree.Folder name="backend" defaultOpen>
+      <FileTree.Folder name="Properties">
+        <FileTree.File name="launchSettings.json" />
+      </FileTree.Folder>
+      <FileTree.File name="ApplicationDbContext.cs" />
+      <FileTree.File name="Program.cs" />
+      <FileTree.File name="Store.csproj" />
+      <FileTree.File name="appsettings.json" />
+      <FileTree.File name="appsettings.Development.json" />
+    </FileTree.Folder>
+    <FileTree.Folder name="frontend" defaultOpen>
+      <FileTree.Folder name="src" defaultOpen>
+        <FileTree.Folder name="components">
+          <FileTree.File name="ThemeToggle.tsx" />
+        </FileTree.Folder>
+        <FileTree.Folder name="contexts">
+          <FileTree.File name="ThemeContext.tsx" />
+          <FileTree.File name="ThemeContextType.ts" />
+          <FileTree.File name="useTheme.ts" />
+        </FileTree.Folder>
+        <FileTree.File name="App.tsx" />
+        <FileTree.File name="Main.tsx" />
+        <FileTree.File name="index.css" />
+        <FileTree.File name="vite-env.d.ts" />
+      </FileTree.Folder>
+      <FileTree.Folder name="public">
+        <FileTree.File name="vite.svg" />
+      </FileTree.Folder>
+      <FileTree.File name="package.json" />
+      <FileTree.File name="vite.config.ts" />
+      <FileTree.File name="tsconfig.json" />
+      <FileTree.File name="tsconfig.app.json" />
+      <FileTree.File name="tsconfig.node.json" />
+      <FileTree.File name="eslint.config.js" />
+      <FileTree.File name="store.frontend.esproj" />
+    </FileTree.Folder>
+    <FileTree.Folder name="dev">
+      <FileTree.File name="docker-compose.yml" />
+    </FileTree.Folder>
+    <FileTree.Folder name="docker">
+      <FileTree.File name="Dockerfile" />
+      <FileTree.File name="docker-compose.yml" />
+      <FileTree.Folder name="templates">
+        <FileTree.File name="default.conf.template" />
+      </FileTree.Folder>
+    </FileTree.Folder>
+    <FileTree.File name="Store.sln" />
+    <FileTree.File name="Store.slnLaunch" />
+    <FileTree.File name="README.md" />
+    <FileTree.File name=".gitignore" />
+  </FileTree.Folder>
+</FileTree>
+
+Let's explore what each directory contains:
+| File/Folder            | Purpose                                                                                              |
+| ---------------------- | ---------------------------------------------------------------------------------------------------- |
+| `backend/`             | .NET API project with basic configuration                                                            |
+| `frontend/`            | React application with components, pages, and client-side logic                                      |
+| `dev/`                 | Development environment with Docker Compose for PostgreSQL                                           |
+| `docker/`              | Contains Docker configuration files for containerized deployment                                     |
+| `Store.sln`            | Solution file that includes all projects                                                             |
+| `Store.slnLaunch`      | Solution launch configuration for Visual Studio                                                      |
+| `README.md`            | Project documentation and setup instructions                                                         |
+
+## 4. Hello, Zest!
+
+Now that we have created our Store application, it's time to start it up and see what Zest has generated for us. We'll also make our first change to the application to understand how everything works together.
+
+### Starting the Application
+
+Zest provides multiple ways to run your application. Let's explore the recommended approach first, then alternative methods.
+
+#### Using Visual Studio
+
+The easiest and most productive way to develop with Zest is using Visual Studio, which provides excellent debugging capabilities for both the backend and frontend.
+
+1. **Open the solution**: Navigate to your Store directory and double-click on `Store.sln`, or open Visual Studio and select "Open a project or solution" and choose the `Store.sln` file.
+
+2. **Set multiple startup projects**: 
+   - Right-click on the solution in Solution Explorer
+   - Select "Configure Startup Projects..."
+   - Choose "Multiple startup projects"
+   - Set both `backend` and `frontend` projects to "Start"
+
+3. **Start debugging**: Press `F5` or click the "Start" button. Visual Studio will launch both the .NET backend and the React frontend simultaneously.
+
+You should see two console windows open:
+- One for the .NET backend API (running on http://localhost:5226)
+- One for the React frontend development server (running on http://localhost:5173)
+
+#### Using Command Line
+
+If you prefer working with the command line or using a different editor, you can start the application using two terminal windows.
+
+**Terminal 1 - Start the Backend:**
+```bash
+$ cd backend
+$ dotnet run
+```
+
+You should see output similar to:
+```text copy=false
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5226
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+```
+
+**Terminal 2 - Start the Frontend:**
+```bash
+$ cd frontend
+$ npm run dev
+```
+
+You should see output similar to:
+```text copy=false
+  VITE v5.0.0  ready in 543 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+```
+
+### Understanding the Development Workflow
+
+Once both servers are running, open your web browser and navigate to http://localhost:5173. Let's understand what's happening behind the scenes:
+
+1. **Frontend Development Server**: Vite serves your React application with hot module replacement (HMR), so changes to your frontend code appear instantly in the browser.
+
+2. **Backend API Server**: The .NET application runs your API endpoints and serves data to the frontend.
+
+3. **Type Safety**: Zest automatically generates TypeScript types from your C# models, ensuring type safety across your entire application.
+
+### Hot Reload in Development
+
+Zest provides a powerful hot reload experience that enhances your development workflow:
+
+- **Frontend Hot Reload**: Modify any React component and see changes instantly without losing application state
+- **Backend Hot Reload**: Modify C# controllers, services, or models and the application automatically recompiles
+- **Type Safety Updates**: When you modify C# models or controller endpoints, TypeScript types are regenerated automatically, ensuring your frontend code always matches the backend API.
+
+We will explore these features in more detail as we build out our application.
+## 5. Creating Your First Page
+
+Let's start building our Store application by creating our first page that displays products. In this section, we'll create a controller to serve data from the backend and then build a React component to display that data on the frontend.
+
+To get started, we need to tell Zest what we want to display. For our Store application, let's begin with a simple product catalog.
+
+### Creating the Product Model
+
+Let's create our first model. In your code editor, create a new directory called `Entities` inside the `backend` directory and add a new file called `Product.cs`.
+
+Create a new file called `Product.cs` in the `backend/Entities` directory:
+
+```csharp filename="backend/Entities/Product.cs"
+namespace Store.Entities;
+
+public record Product
+{
+    public Guid Id { get; } = Guid.NewGuid();
+
+    public required string Name { get; set; }
+}
+```
+
+### Understanding the Model Structure
+
+Let's break down what we've created:
+
+- **Product**: Our specific entity for products in the store:
+  - `Id`: A unique identifier for each entity 
+  - `Name`: A required string property for the product name
+
+The `required` keyword ensures that the `Name` property must be set when creating a new `Product` instance. This provides compile-time safety and helps prevent null reference exceptions.
+
+### Creating the Products Controller
+
+First, let's create a controller that will handle product-related requests. In your backend project, create a new folder called `Controllers`, and add a new file called `ProductsController.cs`:
+
+```csharp filename="backend/Controllers/ProductsController.cs"
+using Microsoft.AspNetCore.Mvc;
+using Store.Entities;
+
+namespace Store.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class ProductsController : ControllerBase
+{
+    [HttpGet(Name = "GetProducts")]
+    public IEnumerable<Product> Get()
+    {
+        return
+        [
+            new() { Name = "Classic T-Shirt" },
+            new() { Name = "Denim Jeans" },
+            new() { Name = "Running Shoes" }
+        ];
+    }
+}
+```
+
+<Callout>
+We are using sample data for now. This approach lets us build and test our frontend without setting up a database first. We'll connect to a real database in the next section.
+</Callout>
+
+### Understanding What We Just Created
+
+Let's break down what this controller does:
+
+- **`[ApiController]`**: This attribute tells ASP.NET Core that this class is an API controller, enabling automatic model validation and other API-specific behaviors.
+- **`[Route("[controller]")]`**: This sets the base route for this controller to `/Products` (the controller name without the "Controller" suffix).
+- **`[HttpGet]`**: This attribute specifies that the `Get` method responds to HTTP GET requests.
+
+When you make a GET request to `/Products`, this controller will return our sample product data as JSON.
+
+### Testing the Controller
+
+Let's test our new controller, navigate to http://localhost:5226/Products, and you should see the sample product data in JSON format similar to this:
+
+```json
+[
+  {
+    "id": "random-guid",
+    "name": "Classic T-Shirt",
+  },
+  {
+    "id": "random-guid",
+    "name": "Denim Jeans",
+  },
+  {
+    "id": "random-guid",
+    "name": "Running Shoes",
+  }
+]
+```
+
+Congratulations! You've just created your first API endpoint. Now let's build a React component to display this data.
+
+### Creating the Products Page Component
+
+In your frontend project, create a new file in the `src/components` folder called `ProductsPage.tsx`:
+
+```tsx filename="frontend/src/components/ProductsPage.tsx"
+import { useEffect, useState } from "react";
+import { ProductReadable, Products } from "../generated/client";
+
+const ProductsPage = () => {
+    const [products, setProducts] = useState<ProductReadable[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const loadProducts = async () => {
+        setLoading(true);
+        try {
+            const response = await Products.getProducts();
+            if (!response.error && response.data != undefined) {
+                setProducts(response.data);
+            } else {
+                console.error('Failed to load products');
+            }
+        } catch (error) {
+            console.error('Error loading products:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadProducts();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center space-y-2">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-primary mx-auto"></div>
+                    <p className="text-sm text-muted-foreground">Loading products...</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="w-full max-w-6xl mx-auto space-y-8 p-6">
+            <div className="bg-card rounded-lg border border-border shadow-sm">
+                <div className="p-6 pb-4">
+                    <div className="flex flex-col space-y-1.5">
+                        <h1 className="text-3xl font-bold leading-none tracking-tight text-card-foreground">Our Store</h1>
+                        <p className="text-muted-foreground">
+                            Discover our amazing collection of products
+                        </p>
+                    </div>
+                </div>
+
+                <div className="p-6 pt-0">
+                    {products.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {products.map(product => (
+                                <div
+                                    key={product.id}
+                                    className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-shadow"
+                                >
+                                    <h3 className="font-semibold text-lg mb-2 text-card-foreground">{product.name}</h3>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <p className="text-muted-foreground">No products available.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default ProductsPage;
+```
+
+### Displaying the Products Page
+
+Now we need to update our main `App.tsx` file to display our new products page. Open `src/App.tsx` and replace its contents with:
+
+```tsx
+import ProductsPage from './components/ProductsPage';
+import './index.css';
+
+function App() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <ProductsPage />
+    </div>
+  );
+}
+
+export default App;
+```
+
+### Seeing Your First Page in Action
+
+Now that we have our `ProductsPage` component set up, let's see it in action. Navigate to http://localhost:5173 in your web browser and you should see a page displaying our sample products.
+
+### Understanding the Frontend Code
+
+Let's examine what we built:
+
+- **Automatic API Client**: Zest automatically generates a TypeScript client for your API based on your C# models and controllers.
+- **Models**: We use TypeScript interfaces generated from our C# models to ensure type safety.
+- **Error Handling**: We handle potential errors when fetching data from the API.
+
+You've successfully created your first full-stack feature! Your React frontend is now communicating with your .NET backend to display product data. 
+
+In the next section, we'll learn about creating a database model for our products and how to manage database migrations with Entity Framework Core. This will allow us to persist product data in a real database instead of using hardcoded values.
+
+## 6. Creating a Database Model
+
+Now that we have our Store application running, it's time to add some functionality. We'll start by using the previously created `Product` model to represent the items in our store.
+
+Models define the structure of your data and are mapped to database tables by Entity Framework Core.
+
+### Registering with Entity Framework
+
+For Entity Framework to know about our `Product` entity, we need to add it to our `ApplicationDbContext`  and define its primary key like so:
+
+```csharp filename="backend/ApplicationDbContext.cs" {8,12}
+using Microsoft.EntityFrameworkCore;
+using Store.Entities;
+
+namespace Store;
+
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+{
+    public DbSet<Product> Products { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        builder.Entity<Product>().HasKey(e => e.Id);
+        
+        base.OnModelCreating(builder);
+    }
+}
+```
+
+### Database Migrations
+
+Now that we have our `Product` entity defined and registered with Entity Framework, we need to create a database migration. Migrations are a way to manage changes to your database schema over time. They allow you to:
+
+- Version control your database schema changes
+- Share database structure changes with your team
+- Apply schema changes consistently across different environments
+- Roll back changes if needed
+
+Entity Framework Core uses migrations to translate your C# entity definitions into actual database tables and columns.
+
+#### Creating Your First Migration
+
+To create a migration for our `Product` entity, we'll use the Entity Framework Core command-line tools. First, make sure you're in the `backend` directory in your terminal:
+
+```bash
+$ cd backend
+```
+
+Now, let's create our migration. We'll call it "AddProduct" since it represents the addition of our `Product` entity to the database schema:
+
+```bash
+$ dotnet ef migrations add AddProduct
+```
+
+After running the migration command successfully, you should see output similar to:
+
+```text copy=false
+Build started...
+Build succeeded.
+Done. To undo this action, use 'dotnet ef migrations remove'
+```
+
+#### What Just Happened?
+
+Entity Framework Core examined your `ApplicationDbContext` and your `Product` entity, then generated the necessary code to create the database schema. Let's look at what was created.
+
+You should now see a `Migrations` folder in your `backend` directory with two files:
+
+1. **`{timestamp}_AddProduct.cs`** - The migration file with the actual schema changes
+2. **`ApplicationDbContextModelSnapshot.cs`** - A snapshot of your current model state
+
+Let's examine the migration file (the exact filename will have a timestamp, but the content will be similar):
+
+```csharp filename="backend/Migrations/{timestamp}_AddProduct.cs"
+using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace Store.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddProduct : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "Products",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.Id);
+                });
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "Products");
+        }
+    }
+}
+```
+
+#### Understanding the Migration
+
+The migration file contains two methods:
+
+- **`Up()` method**: Defines what changes to apply when the migration runs forward. In our case, it creates the `Products` table with `Id` and `Name` columns.
+- **`Down()` method**: Defines how to reverse the changes if you need to roll back the migration. Here, it drops the `Products` table.
+
+Entity Framework automatically:
+- Created a table named `Products` (pluralized from our `Product` entity)
+- Made the `Id` column the primary key
+- Set the `Name` column as `NOT NULL` because we marked it as `required`
+- Used appropriate SQL data types for each property
+
+### Running Migrations
+
+Creating a migration file is only the first step. The migration file contains the instructions for what changes to make to the database, but we still need to actually execute those instructions to update our database schema.
+
+#### Applying the Migration to the Database
+
+To apply our `AddProduct` migration to the database, we use the `dotnet ef database update` command. Make sure you're still in the `backend` directory:
+
+```bash
+$ dotnet ef database update
+```
+
+You should see output similar to:
+
+```text copy=false
+Build started...
+Build succeeded.
+...
+Done.
+```
+
+**Congratulations!** Entity Framework has now:
+
+1. Created the `Products` table with the correct schema
+2. Applied the migration and recorded it in a special `__EFMigrationsHistory` table
+
+#### What Happened Behind the Scenes?
+
+When you ran `dotnet ef database update`, Entity Framework Core:
+
+1. **Connected to the database** using the connection string from your `appsettings.Development.json`
+2. **Checked the migrations history** to see which migrations have already been applied
+3. **Executed the SQL commands** defined in the `Up()` method of any pending migrations
+4. **Recorded the migration** in the `__EFMigrationsHistory` table to track what's been applied
+
+When using PostgreSQL, the actual SQL executed would look something like:
+
+```sql
+CREATE TABLE "Products" (
+    "Id" uuid NOT NULL,
+    "Name" text NOT NULL,
+    CONSTRAINT "PK_Products" PRIMARY KEY ("Id")
+);
+```
+
+## 7. Showing Products
+
+Now that we have our database set up with the `Products` table, let's connect our controller to actually use the database instead of the hardcoded sample data we created earlier.
+
+First, we need to update our controller to use dependency injection to access our `ApplicationDbContext`. Replace the contents of `backend/Controllers/ProductsController.cs` with:
+
+```csharp filename="backend/Controllers/ProductsController.cs"
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Store.Entities;
+
+namespace Store.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class ProductsController(ApplicationDbContext context) : ControllerBase
+{
+    [HttpGet(Name = "GetProducts")]
+    public async Task<IEnumerable<Product>> Get()
+    {
+        return await context.Products.ToListAsync();
+    }
+}
+```
+
+### Understanding the Changes
+
+Let's break down what we changed:
+
+- **Dependency Injection**: We added `ApplicationDbContext context` as a constructor parameter. ASP.NET Core's built-in dependency injection container will automatically provide an instance of our database context.
+- **Database Query**: Instead of returning hardcoded data, we use `context.Products.ToListAsync()` to fetch all products from the database.
+- **Async/Await**: We made the method asynchronous using `async Task<IEnumerable<Product>>` to avoid blocking the thread while waiting for database operations.
+- **Entity Framework Query**: `context.Products` represents our `Products` table, and `ToListAsync()` executes the query and returns all rows as a list.
+
+### Viewing Your Frontend
+
+Your React frontend should also reflect this change. Navigate to http://localhost:5173 and you should see your products page, but instead of the hardcoded sample products, it will show "No products found" since our database is currently empty.
+
+This is exactly what we want! Our application is now connected to the database end-to-end. In the next section, we'll learn how to create products so we can see some data flowing through our application.
+
+## 8. Advanced State Management
+
+While our basic product fetching works, Zest provides much more powerful state management capabilities through automatically generated TanStack Query hooks. TanStack Query is a powerful data synchronization library that provides caching, background updates, and optimistic updates out of the box.
+
+Let's update our `ProductsPage` component to use the auto-generated TanStack Query utilities. Replace the contents of `frontend/src/components/ProductsPage.tsx` with:
+
+```tsx filename="frontend/src/components/ProductsPage.tsx"
+import { useQuery } from "@tanstack/react-query";
+import { getProductsOptions } from "../generated/client/@tanstack/react-query.gen";
+
+const ProductsPage = () => {
+    const { 
+        data: products = [], 
+        isLoading, 
+        error,
+        isError 
+    } = useQuery(getProductsOptions());
+
+    if (isLoading) {
+        return (
+            <div className="w-full max-w-6xl mx-auto p-6">
+                <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-2 text-muted-foreground">Loading products...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="w-full max-w-6xl mx-auto p-6">
+                <div className="text-center py-8">
+                    <p className="text-destructive">Error loading products: {error?.message}</p>
+                    <button 
+                        onClick={() => window.location.reload()}
+                        className="mt-4 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors duration-200"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="w-full max-w-6xl mx-auto space-y-8 p-6">
+            <div className="text-center">
+                <h1 className="text-4xl font-bold text-foreground mb-4">Our Products</h1>
+                <p className="text-xl text-muted-foreground">Discover our amazing collection</p>
+            </div>
+            
+            {products.length === 0 ? (
+                <div className="text-center py-12">
+                    <p className="text-xl text-muted-foreground">No products found</p>
+                    <p className="text-muted-foreground/70 mt-2">Check back later for new arrivals!</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {products.map((product) => (
+                        <div key={product.id} className="bg-card rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200 border border-border">
+                            <h3 className="text-xl font-semibold text-card-foreground mb-2">{product.name}</h3>
+                            <div className="text-sm text-muted-foreground">ID: {product.id}</div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default ProductsPage;
+```
+
+### Configuring the Query Client
+
+To use TanStack Query in our application, we need to set up a QueryClient. Update your `frontend/src/Main.tsx` to include the TanStack Query provider:
+
+```tsx filename="frontend/src/Main.tsx"
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import './index.css'
+import App from './App.tsx'
+
+const queryClient = new QueryClient()
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  </StrictMode>,
+)
+```
+
+### Advanced Features Preview
+
+The auto-generated TanStack Query utilities provide many more advanced features we'll explore as we build out our application:
+
+- **Mutations**: For creating, updating, and deleting data with optimistic updates
+- **Infinite queries**: For pagination and infinite scrolling
+- **Query invalidation**: Automatically refresh related data when changes occur
+
+In the next sections, we'll use these features as we implement creating, editing, and deleting products.
+
+## 9. Creating Products
+
+Now that we can display products from our database, let's add the ability to create new products. We'll need to add a new endpoint to our controller and then build a form on the frontend that leverages TanStack Query's powerful mutation capabilities for optimal state management.
+
+### Adding a POST Endpoint
+
+First, let's add a `POST` endpoint to our `ProductsController` that will allow us to create new products. Update your `backend/Controllers/ProductsController.cs` file:
+
+```csharp filename="backend/Controllers/ProductsController.cs"
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Store.Entities;
+
+namespace Store.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class ProductsController(ApplicationDbContext context) : ControllerBase
+{
+    [HttpGet(Name = "GetProducts")]
+    public async Task<IEnumerable<Product>> Get()
+    {
+        return await context.Products.ToListAsync();
+    }
+
+    [HttpPost(Name = "CreateProduct")]
+    public async Task<ActionResult<Product>> Post([FromBody] CreateProductRequest request)
+    {
+        var product = new Product { Name = request.Name };
+        
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+        
+        return CreatedAtAction(nameof(Get), new { id = product.Id }, product);
+    }
+}
+
+public record CreateProductRequest
+{
+    public required string Name { get; set; }
+}
+```
+
+### Understanding the Create Endpoint
+
+Let's break down what this new endpoint does:
+
+- **`[HttpPost]`**: This attribute specifies that the `Post` method responds to HTTP POST requests.
+- **`[FromBody]`**: This tells ASP.NET Core to deserialize the request body into our `CreateProductRequest` object.
+- **Entity Creation**: We create a new `Product` instance using the data from the request.
+- **Entity Framework Add**: `context.Products.Add(product)` tells Entity Framework to track this new entity for insertion.
+- **SaveChanges**: `await context.SaveChangesAsync()` commits the changes to the database.
+- **CreatedAtAction**: Returns a `201 Created` status with the newly created product and a location header.
+
+The `CreateProductRequest` record serves as a data transfer object (DTO) that defines what data we expect when creating a product.
+
+### Using TanStack Query Mutations
+
+Now let's build a React form that leverages Zest's auto-generated TanStack Query utilities. TanStack Query provides powerful mutation capabilities that handle loading states, error handling, and automatic cache updates out of the box.
+
+Let's update our `ProductsPage.tsx` component to use the auto-generated mutation hooks:
+
+```tsx filename="frontend/src/components/ProductsPage.tsx"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getProductsOptions, createProductMutation, getProductsQueryKey } from "../generated/client/@tanstack/react-query.gen";
+import { zCreateProductRequest } from "../generated/client/zod.gen";
+import { CreateProductRequest } from "../generated/client";
+ 
+const ProductsPage = () => {
+    const queryClient = useQueryClient();
+    
+    const { 
+        data: products = [], 
+        isLoading, 
+        error,
+        isError 
+    } = useQuery(getProductsOptions());
+ 
+    const createProduct = useMutation({
+        ...createProductMutation(),
+        onSuccess: () => {
+            // Automatically refresh the products list when a new product is created
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+            // Reset the form
+            form.reset();
+        },
+    });
+ 
+    const form = useForm<CreateProductRequest>({
+        resolver: zodResolver(zCreateProductRequest),
+        defaultValues: {
+            name: "",
+        },
+    });
+ 
+    const handleSubmit = (data: CreateProductRequest) => {
+        createProduct.mutate({
+            body: data,
+        });
+    };
+ 
+    if (isLoading) {
+        return (
+            <div className="w-full max-w-6xl mx-auto p-6">
+                <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-2 text-muted-foreground">Loading products...</p>
+                </div>
+            </div>
+        );
+    }
+ 
+    if (isError) {
+        return (
+            <div className="w-full max-w-6xl mx-auto p-6">
+                <div className="text-center py-8">
+                    <p className="text-destructive">Error loading products: {error?.message || "Unknown error"}</p>
+                    <button 
+                        onClick={() => window.location.reload()}
+                        className="mt-4 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors duration-200"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
+ 
+    return (
+        <div className="w-full max-w-6xl mx-auto space-y-8 p-6">
+            <h1 className="text-3xl font-bold text-foreground">Products</h1>
+            
+            {/* Product Creation Form */}
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+                <h2 className="text-xl font-semibold mb-4 text-card-foreground">Add New Product</h2>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-card-foreground mb-1">
+                            Product Name
+                        </label>
+                        <input
+                            id="name"
+                            type="text"
+                            {...form.register("name")}
+                            className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors duration-200"
+                            placeholder="Enter product name"
+                        />
+                        {form.formState.errors.name && (
+                            <p className="text-destructive text-sm mt-1">
+                                {form.formState.errors.name.message}
+                            </p>
+                        )}
+                    </div>
+                    
+                    <button
+                        type="submit"
+                        disabled={createProduct.isPending}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    >
+                        {createProduct.isPending ? "Creating..." : "Create Product"}
+                    </button>
+                    
+                    {createProduct.error && (
+                        <p className="text-destructive text-sm">
+                            Error creating product: {createProduct.error.message}
+                        </p>
+                    )}
+                </form>
+            </div>
+ 
+            {/* Products List */}
+            <div className="bg-card border border-border rounded-lg shadow-sm">
+                <div className="px-6 py-4 border-b border-border">
+                    <h2 className="text-xl font-semibold text-card-foreground">Product List</h2>
+                </div>
+                <div className="p-6">
+                    {products.length === 0 ? (
+                        <p className="text-muted-foreground text-center">No products found. Create your first product above!</p>
+                    ) : (
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {products.map((product) => (
+                                <div key={product.id} className="border border-border rounded-lg p-4 bg-card hover:shadow-md transition-shadow duration-200">
+                                    <h3 className="font-medium text-card-foreground">{product.name}</h3>
+                                    <p className="text-sm text-muted-foreground">ID: {product.id}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+ 
+export default ProductsPage;
+```
+
+### Understanding TanStack Query Mutations
+
+Let's examine what makes this TanStack Query implementation superior to manual state management:
+
+- **Auto-Generated Mutations**: Zest generates the `createProductMutation()` function that handles all the API communication details.
+- **Optimistic State Management**: TanStack Query automatically manages loading states through `createProduct.isPending`.
+- **Error Handling**: Built-in error handling with `createProduct.error` provides detailed error information.
+- **Cache Invalidation**: `queryClient.invalidateQueries({ queryKey: getProductsQueryKey() })` automatically refreshes the products list when a new product is created.
+- **Type Safety**: Full end-to-end type safety from the C# backend to React frontend with `CreateProductRequest`.
+
+### Testing the Complete Flow
+
+Now let's test our complete create product flow:
+
+1. **Navigate to** http://localhost:5173
+2. **Fill out the form** with a product name like "Classic T-Shirt"
+3. **Click "Create Product"** and watch the following happen automatically:
+   - The button shows "Creating..." while the request is in progress
+   - When successful, the form resets and the products list updates
+   - If there's an error, it's displayed below the form
+
+The beauty of this approach is that TanStack Query handles all the complex state management, caching, and synchronization for us, while Zest provides the fully typed, auto-generated API client.
+
+## 10. Editing Products
+
+Now that we can create products, let's add the ability to edit existing ones. This is a common pattern in web applications - users often need to update information after it's been created. We'll implement this by adding an update endpoint to our controller and building an edit form that leverages TanStack Query's optimistic updates.
+
+### Adding the PUT Endpoint
+
+First, let's add a `PUT` endpoint to our `ProductsController` that will handle product updates.
+
+```csharp filename="backend/Controllers/ProductsController.cs"
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Store.Entities;
+
+namespace Store.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class ProductsController(ApplicationDbContext context) : ControllerBase
+{
+    [HttpGet(Name = "GetProducts")]
+    public async Task<IEnumerable<Product>> Get()
+    {
+        return await context.Products.ToListAsync();
+    }
+
+    [HttpPost(Name = "CreateProduct")]
+    public async Task<ActionResult<Product>> Post([FromBody] CreateProductRequest request)
+    {
+        var product = new Product { Name = request.Name };
+        
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+        
+        return CreatedAtAction(nameof(Get), new { id = product.Id }, product);
+    }
+
+    [HttpPut("{id}", Name = "UpdateProduct")]
+    public async Task<ActionResult<Product>> Put(Guid id, [FromBody] UpdateProductRequest request)
+    {
+        var product = await context.Products.FindAsync(id);
+        
+        if (product == null)
+        {
+            return NotFound();
+        }
+        
+        product.Name = request.Name;
+        await context.SaveChangesAsync();
+        
+        return product;
+    }
+}
+
+public record CreateProductRequest
+{
+    public required string Name { get; set; }
+}
+
+public record UpdateProductRequest
+{
+    public required string Name { get; set; }
+}
+```
+
+### Understanding the Update Endpoint
+
+Let's break down what we added:
+
+- **`[HttpPut("{id}")]`**: This endpoint updates an existing product. Following REST conventions, PUT is used for updates.
+- **NotFound() Response**: When a product with the given ID doesn't exist, we return a `404 Not Found` status.
+- **UpdateProductRequest**: A separate DTO for update operations, which gives us flexibility to have different validation rules for creates vs updates.
+- **Entity Framework Update**: We fetch the existing entity, modify its properties, and call `SaveChangesAsync()` to persist the changes.
+
+### Adding Edit Functionality to the Frontend
+
+Now let's update our frontend to support editing. We'll modify our `ProductsPage.tsx` to include edit buttons and an edit form. This will demonstrate TanStack Query's powerful state management for complex UI interactions.
+
+```tsx filename="frontend/src/components/ProductsPage.tsx"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { getProductsOptions, createProductMutation, updateProductMutation, getProductsQueryKey } from "../generated/client/@tanstack/react-query.gen";
+import { zCreateProductRequest, zUpdateProductRequest } from "../generated/client/zod.gen";
+import { CreateProductRequest, UpdateProductRequest, ProductReadable } from "../generated/client";
+
+const ProductsPage = () => {
+    const queryClient = useQueryClient();
+    const [editingId, setEditingId] = useState<string | null>(null);
+    
+    const { 
+        data: products = [], 
+        isLoading, 
+        error,
+        isError 
+    } = useQuery(getProductsOptions());
+
+    const createProduct = useMutation({
+        ...createProductMutation(),
+        onSuccess: () => {
+            // Automatically refresh the products list when a new product is created
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+            // Reset the form
+            form.reset();
+        },
+    });
+
+    const updateProduct = useMutation({
+        ...updateProductMutation(),
+        onSuccess: () => {
+            // Automatically refresh the products list when a product is updated
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+            // Exit edit mode
+            setEditingId(null);
+        },
+    });
+
+    const form = useForm<CreateProductRequest>({
+        resolver: zodResolver(zCreateProductRequest),
+        defaultValues: {
+            name: "",
+        },
+    });
+
+    const handleSubmit = (data: CreateProductRequest) => {
+        createProduct.mutate({
+            body: data,
+        });
+    };
+
+    const handleUpdateSubmit = (productId: string, data: UpdateProductRequest) => {
+        updateProduct.mutate({
+            path: { id: productId },
+            body: data,
+        });
+    };
+
+    const startEdit = (productId: string) => {
+        setEditingId(productId);
+    };
+
+    const cancelEdit = () => {
+        setEditingId(null);
+    };
+
+    if (isLoading) {
+        return (
+            <div className="w-full max-w-6xl mx-auto p-6">
+                <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-2 text-muted-foreground">Loading products...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="w-full max-w-6xl mx-auto p-6">
+                <div className="text-center py-8">
+                    <p className="text-destructive">Error loading products: {error?.message || "Unknown error"}</p>
+                    <button 
+                        onClick={() => window.location.reload()}
+                        className="mt-4 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors duration-200"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="w-full max-w-6xl mx-auto space-y-8 p-6">
+            <h1 className="text-3xl font-bold text-foreground">Products</h1>
+            
+            {/* Product Creation Form */}
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+                <h2 className="text-xl font-semibold mb-4 text-card-foreground">Add New Product</h2>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-card-foreground mb-1">
+                            Product Name
+                        </label>
+                        <input
+                            id="name"
+                            type="text"
+                            {...form.register("name")}
+                            className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors duration-200"
+                            placeholder="Enter product name"
+                        />
+                        {form.formState.errors.name && (
+                            <p className="text-destructive text-sm mt-1">
+                                {form.formState.errors.name.message}
+                            </p>
+                        )}
+                    </div>
+                    
+                    <button
+                        type="submit"
+                        disabled={createProduct.isPending}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    >
+                        {createProduct.isPending ? "Creating..." : "Create Product"}
+                    </button>
+                    
+                    {createProduct.error && (
+                        <p className="text-destructive text-sm">
+                            Error creating product: {createProduct.error.message}
+                        </p>
+                    )}
+                </form>
+            </div>
+
+            {/* Products List */}
+            <div className="bg-card border border-border rounded-lg shadow-sm">
+                <div className="px-6 py-4 border-b border-border">
+                    <h2 className="text-xl font-semibold text-card-foreground">Product List</h2>
+                </div>
+                <div className="p-6">
+                    {products.length === 0 ? (
+                        <p className="text-muted-foreground text-center">No products found. Create your first product above!</p>
+                    ) : (
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {products.map((product) => (
+                                <ProductCard
+                                    key={product.id}
+                                    product={product}
+                                    isEditing={editingId === product.id}
+                                    onEdit={startEdit}
+                                    onCancel={cancelEdit}
+                                    onUpdate={handleUpdateSubmit}
+                                    isUpdating={updateProduct.isPending && editingId === product.id}
+                                    updateError={updateProduct.error}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+interface ProductCardProps {
+    product: ProductReadable;
+    isEditing: boolean;
+    onEdit: (id: string) => void;
+    onCancel: () => void;
+    onUpdate: (id: string, data: UpdateProductRequest) => void;
+    isUpdating: boolean;
+    updateError: Error | null;
+}
+
+const ProductCard = ({ 
+    product, 
+    isEditing, 
+    onEdit, 
+    onCancel, 
+    onUpdate, 
+    isUpdating,
+    updateError 
+}: ProductCardProps) => {
+    const editForm = useForm<UpdateProductRequest>({
+        resolver: zodResolver(zUpdateProductRequest),
+        defaultValues: {
+            name: product.name || "",
+        },
+    });
+
+    const handleEditSubmit = (data: UpdateProductRequest) => {
+        onUpdate(product.id, data);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            onCancel();
+        }
+    };
+
+    if (isEditing) {
+        return (
+            <div className="border border-border rounded-lg p-4 bg-card">
+                <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-3">
+                    <div>
+                        <input
+                            {...editForm.register("name")}
+                            className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors duration-200"
+                            placeholder="Enter product name"
+                            onKeyDown={handleKeyDown}
+                            autoFocus
+                        />
+                        {editForm.formState.errors.name && (
+                            <p className="text-destructive text-xs mt-1">
+                                {editForm.formState.errors.name.message}
+                            </p>
+                        )}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                        <button
+                            type="submit"
+                            disabled={isUpdating}
+                            className="flex-1 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                        >
+                            {isUpdating ? "Saving..." : "Save"}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onCancel}
+                            disabled={isUpdating}
+                            className="flex-1 px-3 py-1.5 text-sm bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 disabled:opacity-50 transition-colors duration-200"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                    
+                    {updateError && (
+                        <p className="text-destructive text-xs">
+                            Error updating product: {updateError.message}
+                        </p>
+                    )}
+                </form>
+                
+                <p className="text-xs text-muted-foreground mt-2">ID: {product.id}</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="border border-border rounded-lg p-4 bg-card hover:shadow-md transition-shadow duration-200 group">
+            <div className="flex justify-between items-start">
+                <div className="flex-1">
+                    <h3 className="font-medium text-card-foreground">{product.name}</h3>
+                    <p className="text-sm text-muted-foreground">ID: {product.id}</p>
+                </div>
+                <button
+                    onClick={() => onEdit(product.id)}
+                    className="opacity-0 group-hover:opacity-100 ml-2 px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-all duration-200"
+                >
+                    Edit
+                </button>
+            </div>
+        </div>
+    );
+};
+
+export default ProductsPage;
+```
+
+### Testing the Edit Flow
+
+Let's test our new editing functionality:
+
+1. **Create a product** if you haven't already using the create form
+2. **Click the "Edit" button** next to any product in the list
+3. **Notice the edit form appears** with the current product name pre-filled
+4. **Change the product name** to something different
+5. **Click "Update Product"** and observe:
+   - The button shows "Updating..." during the request
+   - Upon success, the edit form disappears and the products list updates with the new name
+   - If there's an error, it's displayed below the form
+
+6. **Try the "Cancel" button** to exit edit mode without saving changes
+
+In the next section, we'll add the ability to delete products to complete the full CRUD functionality.
+
+## 11. Deleting Products
+
+The final piece of our CRUD functionality is the ability to delete products. This allows users to remove products that are no longer needed. Following REST conventions, we'll use an HTTP DELETE request to remove products from our database.
+
+### Adding the DELETE Endpoint
+
+Let's add a `DELETE` endpoint to our `ProductsController` that will handle product deletions. Update your `backend/Controllers/ProductsController.cs` file:
+
+```csharp filename="backend/Controllers/ProductsController.cs"
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Store.Entities;
+
+namespace Store.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class ProductsController(ApplicationDbContext context) : ControllerBase
+{
+    [HttpGet(Name = "GetProducts")]
+    public async Task<IEnumerable<Product>> Get()
+    {
+        return await context.Products.ToListAsync();
+    }
+
+    [HttpPost(Name = "CreateProduct")]
+    public async Task<ActionResult<Product>> Post([FromBody] CreateProductRequest request)
+    {
+        var product = new Product { Name = request.Name };
+        
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+        
+        return CreatedAtAction(nameof(Get), new { id = product.Id }, product);
+    }
+
+    [HttpPut("{id}", Name = "UpdateProduct")]
+    public async Task<ActionResult<Product>> Put(Guid id, [FromBody] UpdateProductRequest request)
+    {
+        var product = await context.Products.FindAsync(id);
+        
+        if (product == null)
+        {
+            return NotFound();
+        }
+        
+        product.Name = request.Name;
+        await context.SaveChangesAsync();
+        
+        return product;
+    }
+
+    [HttpDelete("{id}", Name = "DeleteProduct")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var product = await context.Products.FindAsync(id);
+        
+        if (product == null)
+        {
+            return NotFound();
+        }
+        
+        context.Products.Remove(product);
+        await context.SaveChangesAsync();
+        
+        return NoContent();
+    }
+}
+
+public record CreateProductRequest
+{
+    public required string Name { get; set; }
+}
+
+public record UpdateProductRequest
+{
+    public required string Name { get; set; }
+}
+```
+
+### Adding Delete Functionality to the Frontend
+
+Now let's update our frontend to support deleting products. We'll add delete buttons to each product card and use TanStack Query's mutation capabilities to handle the deletion with proper state management.
+
+```tsx filename="frontend/src/components/ProductsPage.tsx"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { getProductsOptions, createProductMutation, updateProductMutation, deleteProductMutation, getProductsQueryKey } from "../generated/client/@tanstack/react-query.gen";
+import { zCreateProductRequest, zUpdateProductRequest } from "../generated/client/zod.gen";
+import { CreateProductRequest, UpdateProductRequest, ProductReadable } from "../generated/client";
+ 
+const ProductsPage = () => {
+    const queryClient = useQueryClient();
+    const [editingId, setEditingId] = useState<string | null>(null);
+    
+    const { 
+        data: products = [], 
+        isLoading, 
+        error,
+        isError 
+    } = useQuery(getProductsOptions());
+ 
+    const createProduct = useMutation({
+        ...createProductMutation(),
+        onSuccess: () => {
+            // Automatically refresh the products list when a new product is created
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+            // Reset the form
+            form.reset();
+        },
+    });
+ 
+    const updateProduct = useMutation({
+        ...updateProductMutation(),
+        onSuccess: () => {
+            // Automatically refresh the products list when a product is updated
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+            // Exit edit mode
+            setEditingId(null);
+        },
+    });
+ 
+    const deleteProduct = useMutation({
+        ...deleteProductMutation(),
+        onSuccess: () => {
+            // Automatically refresh the products list when a product is deleted
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+        },
+    });
+ 
+    const form = useForm<CreateProductRequest>({
+        resolver: zodResolver(zCreateProductRequest),
+        defaultValues: {
+            name: "",
+        },
+    });
+ 
+    const handleSubmit = (data: CreateProductRequest) => {
+        createProduct.mutate({
+            body: data,
+        });
+    };
+ 
+    const handleUpdateSubmit = (productId: string, data: UpdateProductRequest) => {
+        updateProduct.mutate({
+            path: { id: productId },
+            body: data,
+        });
+    };
+ 
+    const handleDelete = (productId: string) => {
+        if (window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+            deleteProduct.mutate({
+                path: { id: productId },
+            });
+        }
+    };
+ 
+    const startEdit = (productId: string) => {
+        setEditingId(productId);
+    };
+ 
+    const cancelEdit = () => {
+        setEditingId(null);
+    };
+ 
+        if (isLoading) {
+        return (
+            <div className="w-full max-w-6xl mx-auto p-6">
+                <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-2 text-muted-foreground">Loading products...</p>
+                </div>
+            </div>
+        );
+    }
+ 
+    if (isError) {
+        return (
+            <div className="w-full max-w-6xl mx-auto p-6">
+                <div className="text-center py-8">
+                    <p className="text-destructive">Error loading products: {error?.message || "Unknown error"}</p>
+                    <button 
+                        onClick={() => window.location.reload()}
+                        className="mt-4 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors duration-200"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
+ 
+    return (
+        <div className="w-full max-w-6xl mx-auto space-y-8 p-6">
+            {/* Product Creation Form */}
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+                <h2 className="text-xl font-semibold mb-4 text-card-foreground">Add New Product</h2>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-card-foreground mb-1">
+                            Product Name
+                        </label>
+                        <input
+                            id="name"
+                            type="text"
+                            {...form.register("name")}
+                            className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors duration-200"
+                            placeholder="Enter product name"
+                        />
+                        {form.formState.errors.name && (
+                            <p className="text-destructive text-sm mt-1">
+                                {form.formState.errors.name.message}
+                            </p>
+                        )}
+                    </div>
+                    
+                    <button
+                        type="submit"
+                        disabled={createProduct.isPending}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    >
+                        {createProduct.isPending ? "Creating..." : "Create Product"}
+                    </button>
+                    
+                    {createProduct.error && (
+                        <p className="text-destructive text-sm">
+                            Error creating product: {createProduct.error.message}
+                        </p>
+                    )}
+                </form>
+            </div>
+
+            {/* Products List */}
+            <div className="bg-card border border-border rounded-lg shadow-sm">
+                <div className="px-6 py-4 border-b border-border">
+                    <h2 className="text-xl font-semibold text-card-foreground">Product List</h2>
+                </div>
+                <div className="p-6">
+                    {products.length === 0 ? (
+                        <p className="text-muted-foreground text-center">No products found. Create your first product above!</p>
+                    ) : (
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {products.map((product) => (
+                                <ProductCard
+                                    key={product.id}
+                                    product={product}
+                                    isEditing={editingId === product.id}
+                                    onEdit={startEdit}
+                                    onCancel={cancelEdit}
+                                    onUpdate={handleUpdateSubmit}
+                                    onDelete={handleDelete}
+                                    isUpdating={updateProduct.isPending && editingId === product.id}
+                                    isDeleting={deleteProduct.isPending}
+                                    updateError={updateProduct.error}
+                                    deleteError={deleteProduct.error}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+ 
+interface ProductCardProps {
+    product: ProductReadable;
+    isEditing: boolean;
+    onEdit: (id: string) => void;
+    onCancel: () => void;
+    onUpdate: (id: string, data: UpdateProductRequest) => void;
+    onDelete: (id: string) => void;
+    isUpdating: boolean;
+    isDeleting: boolean;
+    updateError: Error | null;
+    deleteError: Error | null;
+}
+ 
+const ProductCard = ({ 
+    product, 
+    isEditing, 
+    onEdit, 
+    onCancel, 
+    onUpdate, 
+    onDelete,
+    isUpdating,
+    isDeleting,
+    updateError,
+    deleteError
+}: ProductCardProps) => {
+    const editForm = useForm<UpdateProductRequest>({
+        resolver: zodResolver(zUpdateProductRequest),
+        defaultValues: {
+            name: product.name || "",
+        },
+    });
+ 
+    const handleEditSubmit = (data: UpdateProductRequest) => {
+        onUpdate(product.id, data);
+    };
+ 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            onCancel();
+        }
+    };
+ 
+    if (isEditing) {
+        return (
+            <div className="border border-border rounded-lg p-4 bg-card">
+                <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-3">
+                    <div>
+                        <input
+                            {...editForm.register("name")}
+                            className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors duration-200"
+                            placeholder="Enter product name"
+                            onKeyDown={handleKeyDown}
+                            autoFocus
+                        />
+                        {editForm.formState.errors.name && (
+                            <p className="text-destructive text-xs mt-1">
+                                {editForm.formState.errors.name.message}
+                            </p>
+                        )}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                        <button
+                            type="submit"
+                            disabled={isUpdating}
+                            className="flex-1 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                        >
+                            {isUpdating ? "Saving..." : "Save"}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onCancel}
+                            disabled={isUpdating}
+                            className="flex-1 px-3 py-1.5 text-sm bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 disabled:opacity-50 transition-colors duration-200"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                    
+                    {updateError && (
+                        <p className="text-destructive text-xs">
+                            Error updating product: {updateError.message}
+                        </p>
+                    )}
+                </form>
+                
+                <p className="text-xs text-muted-foreground mt-2">ID: {product.id}</p>
+            </div>
+        );
+    }
+ 
+    return (
+        <div className="border border-border rounded-lg p-4 bg-card hover:shadow-md transition-shadow duration-200 group">
+            <div className="flex justify-between items-start">
+                <div className="flex-1">
+                    <h3 className="font-medium text-card-foreground">{product.name}</h3>
+                    <p className="text-sm text-muted-foreground">ID: {product.id}</p>
+                </div>
+                <div className="flex gap-1">
+                    <button
+                        onClick={() => onEdit(product.id)}
+                        disabled={isDeleting}
+                        className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50 transition-all duration-200"
+                    >
+                        Edit
+                    </button>
+                    <button
+                        onClick={() => onDelete(product.id)}
+                        disabled={isDeleting || isUpdating}
+                        className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs bg-destructive text-destructive-foreground rounded hover:bg-destructive/80 disabled:opacity-50 transition-all duration-200"
+                    >
+                        {isDeleting ? "Deleting..." : "Delete"}
+                    </button>
+                </div>
+            </div>
+            
+            {deleteError && (
+                <p className="text-destructive text-xs mt-2">
+                    Error deleting product: {deleteError.message}
+                </p>
+            )}
+        </div>
+    );
+};
+ 
+export default ProductsPage;
+```
+
+### Understanding the Delete Implementation
+
+Let's examine the key features of our delete implementation:
+
+- **Auto-Generated Mutations**: Zest generates the `deleteProductMutation()` function that handles all the API communication details.
+- **Confirmation Dialog**: We use `window.confirm()` to ask the user to confirm the deletion, preventing accidental data loss.
+- **Loading States**: The delete button shows "Deleting..." while the request is in progress, and disables other actions.
+- **Error Handling**: Built-in error handling with `deleteProduct.error` provides detailed error information if the deletion fails.
+- **Cache Invalidation**: `queryClient.invalidateQueries({ queryKey: getProductsQueryKey() })` automatically refreshes the products list when a product is deleted.
+- **Optimistic UI**: The UI disables the product card during deletion to prevent multiple requests.
+
+### Testing the Complete CRUD Flow
+
+Now let's test our complete CRUD (Create, Read, Update, Delete) functionality:
+
+1. **Create a product** using the form at the top of the page
+2. **View the product** in the products list below
+3. **Edit the product** by clicking the "Edit" button and changing its name
+4. **Delete the product** by clicking the "Delete" button and confirming the action
+
+Watch how TanStack Query handles all the state management automatically:
+
+- **Loading states** appear during each operation
+- **Error handling** shows meaningful messages if something goes wrong
+- **Cache invalidation** keeps the UI in sync with the server
+- **Optimistic updates** provide immediate feedback to the user
+
+### What We've Accomplished
+
+Congratulations! You now have a fully functional CRUD application. In the next sections, we'll enhance our application further by adding validations and exploring more advanced features like pagination.
+
+## 12. Adding Validations
+
+So far, our Store application allows users to create and edit products without any restrictions on the data they enter. In real-world applications, you'll want to ensure that the data being stored meets certain criteria. For example, you might want to ensure that every product has a name, or that the name meets certain length requirements.
+
+Validations are an essential part of any web application. They help ensure data integrity, provide a better user experience by giving immediate feedback, and prevent invalid data from being stored in your database.
+
+In this section, we'll add validations to our `Product` entity and see how Zest automatically generates the corresponding validation logic for both the backend API and the frontend forms.
+
+### Adding Basic Validations
+
+Let's start by adding some basic validations to our `Product` model. We'll add requirements that ensure every product has a name and that the name meets certain criteria.
+
+Open your `backend/Entities/Product.cs` file and update it with validation attributes:
+
+```csharp filename="backend/Entities/Product.cs"
+using System.ComponentModel.DataAnnotations;
+
+namespace Store.Entities;
+
+public record Product
+{
+    public Guid Id { get; init; } = Guid.NewGuid();
+    
+    [Required(ErrorMessage = "Product name is required")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "Product name must be between 2 and 100 characters")]
+    public required string Name { get; set; }
+}
+```
+
+### Understanding Data Annotation Attributes
+
+Let's examine the validation attributes we added:
+
+- **`[Required]`**: Ensures that the `Name` property cannot be null or empty. The `ErrorMessage` parameter customizes the error message shown when validation fails.
+- **`[StringLength]`**: Validates the length of the string value. In our case, we require the name to be between 2 and 100 characters.
+- **Custom Error Messages**: By providing custom error messages, we ensure users receive clear, helpful feedback when validation fails.
+
+These are just a few of the many validation attributes available in .NET. Other commonly used attributes include `[Range]`, `[EmailAddress]`, `[RegularExpression]`, and `[Compare]`.
+
+### Updating Request DTOs with Validations
+
+Now let's add the same validation rules to our request DTOs to ensure consistency between create and update operations. Update your `backend/Controllers/ProductsController.cs`:
+
+```csharp filename="backend/Controllers/ProductsController.cs"
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Store.Entities;
+using System.ComponentModel.DataAnnotations;
+
+namespace Store.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class ProductsController(ApplicationDbContext context) : ControllerBase
+{
+    [HttpGet(Name = "GetProducts")]
+    public async Task<IEnumerable<Product>> Get()
+    {
+        return await context.Products.ToListAsync();
+    }
+
+    [HttpPost(Name = "CreateProduct")]
+    public async Task<ActionResult<Product>> Post([FromBody] CreateProductRequest request)
+    {
+        var product = new Product { Name = request.Name };
+        
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+        
+        return CreatedAtAction(nameof(Get), new { id = product.Id }, product);
+    }
+
+    [HttpPut("{id}", Name = "UpdateProduct")]
+    public async Task<ActionResult<Product>> Put(Guid id, [FromBody] UpdateProductRequest request)
+    {
+        var product = await context.Products.FindAsync(id);
+        
+        if (product == null)
+        {
+            return NotFound();
+        }
+        
+        product.Name = request.Name;
+        await context.SaveChangesAsync();
+        
+        return product;
+    }
+
+    [HttpDelete("{id}", Name = "DeleteProduct")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var product = await context.Products.FindAsync(id);
+        
+        if (product == null)
+        {
+            return NotFound();
+        }
+        
+        context.Products.Remove(product);
+        await context.SaveChangesAsync();
+        
+        return NoContent();
+    }
+}
+
+public record CreateProductRequest
+{
+    [Required(ErrorMessage = "Product name is required")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "Product name must be between 2 and 100 characters")]
+    public required string Name { get; set; }
+}
+
+public record UpdateProductRequest
+{
+    [Required(ErrorMessage = "Product name is required")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "Product name must be between 2 and 100 characters")]
+    public required string Name { get; set; }
+}
+```
+
+### How Server-Side Validation Works
+
+With these Data Annotations in place, ASP.NET Core automatically validates incoming requests:
+
+1. **Automatic Validation**: When a request is made to your API endpoints, ASP.NET Core automatically validates the request body against the validation attributes.
+2. **ModelState Checking**: If validation fails, the framework automatically returns a `400 Bad Request` response with detailed error information.
+3. **Consistent Error Format**: Error responses follow a standard format that includes which fields failed validation and why.
+
+### Automatic Frontend Validation Generation
+
+Here's where Zest's magic really shines. After updating your backend validation rules, Zest automatically generates corresponding Zod schemas for your TypeScript frontend.
+
+Zest automatically translates C# Data Annotations into equivalent Zod validation rules:
+
+- **`[Required]`** → `z.string()` (non-optional)
+- **`[StringLength(100, MinimumLength = 2)]`** → `z.string().min(2).max(100)`
+- **Custom error messages** → Corresponding Zod error messages
+
+This ensures that validation behavior is identical between your frontend and backend.
+
+### Enhanced Frontend Validation Experience
+
+Now that we have validation schemas generated, our existing forms will automatically include client-side validation. However, let's update our frontend code to provide an even better validation experience with improved error handling and user feedback.
+
+Update your `frontend/src/components/ProductsPage.tsx`:
+
+```tsx filename="frontend/src/components/ProductsPage.tsx"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { getProductsOptions, createProductMutation, updateProductMutation, deleteProductMutation, getProductsQueryKey } from "../generated/client/@tanstack/react-query.gen";
+import { zCreateProductRequest, zUpdateProductRequest } from "../generated/client/zod.gen";
+import { CreateProductRequest, UpdateProductRequest, ProductReadable } from "../generated/client";
+ 
+const ProductsPage = () => {
+    const queryClient = useQueryClient();
+    const [editingId, setEditingId] = useState<string | null>(null);
+    
+    const { 
+        data: products = [], 
+        isLoading, 
+        error,
+        isError 
+    } = useQuery(getProductsOptions());
+ 
+    const createProduct = useMutation({
+        ...createProductMutation(),
+        onSuccess: () => {
+            // Automatically refresh the products list when a new product is created
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+            // Reset the form
+            form.reset();
+        },
+    });
+ 
+    const updateProduct = useMutation({
+        ...updateProductMutation(),
+        onSuccess: () => {
+            // Automatically refresh the products list when a product is updated
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+            // Exit edit mode
+            setEditingId(null);
+        },
+    });
+ 
+    const deleteProduct = useMutation({
+        ...deleteProductMutation(),
+        onSuccess: () => {
+            // Automatically refresh the products list when a product is deleted
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+        },
+    });
+ 
+    const form = useForm<CreateProductRequest>({
+        resolver: zodResolver(zCreateProductRequest),
+        defaultValues: {
+            name: "",
+        },
+        mode: "onChange", // Enable real-time validation
+    });
+ 
+    const handleSubmit = (data: CreateProductRequest) => {
+        createProduct.mutate({
+            body: data,
+        });
+    };
+ 
+    const handleUpdateSubmit = (productId: string, data: UpdateProductRequest) => {
+        updateProduct.mutate({
+            path: { id: productId },
+            body: data,
+        });
+    };
+ 
+    const handleDelete = (productId: string) => {
+        if (window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+            deleteProduct.mutate({
+                path: { id: productId },
+            });
+        }
+    };
+ 
+    const startEdit = (productId: string) => {
+        setEditingId(productId);
+    };
+ 
+    const cancelEdit = () => {
+        setEditingId(null);
+    };
+ 
+    if (isLoading) {
+        return (
+            <div className="w-full max-w-6xl mx-auto p-6">
+                <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-2 text-muted-foreground">Loading products...</p>
+                </div>
+            </div>
+        );
+    }
+ 
+    if (isError) {
+        return (
+            <div className="w-full max-w-6xl mx-auto p-6">
+                <div className="text-center py-8">
+                    <p className="text-destructive">Error loading products: {error?.message || "Unknown error"}</p>
+                    <button 
+                        onClick={() => window.location.reload()}
+                        className="mt-4 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors duration-200"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
+ 
+    return (
+        <div className="w-full max-w-6xl mx-auto space-y-8 p-6">
+            {/* Product Creation Form */}
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+                <h2 className="text-xl font-semibold mb-4 text-card-foreground">Add New Product</h2>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-card-foreground mb-1">
+                            Product Name <span className="text-destructive">*</span>
+                        </label>
+                        <input
+                            id="name"
+                            type="text"
+                            {...form.register("name")}
+                            className={`w-full px-3 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors duration-200 ${
+                                form.formState.errors.name 
+                                    ? "border-destructive focus:ring-destructive" 
+                                    : "border-input"
+                            }`}
+                            placeholder="Enter product name (2-100 characters)"
+                        />
+                        {form.formState.errors.name && (
+                            <p className="text-destructive text-sm mt-1 flex items-center">
+                                <span className="mr-1">⚠️</span>
+                                {form.formState.errors.name.message}
+                            </p>
+                        )}
+                    </div>
+                    
+                    <button
+                        type="submit"
+                        disabled={createProduct.isPending || !form.formState.isValid}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    >
+                        {createProduct.isPending ? "Creating..." : "Create Product"}
+                    </button>
+                    
+                    {createProduct.error && (
+                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                            <p className="text-destructive text-sm font-medium flex items-center">
+                                <span className="mr-1">❌</span>
+                                Error creating product
+                            </p>
+                            <p className="text-destructive text-xs mt-1">
+                                {createProduct.error.message}
+                            </p>
+                        </div>
+                    )}
+                </form>
+            </div>
+
+            {/* Products List */}
+            <div className="bg-card border border-border rounded-lg shadow-sm">
+                <div className="px-6 py-4 border-b border-border">
+                    <h2 className="text-xl font-semibold text-card-foreground">Product List</h2>
+                </div>
+                <div className="p-6">
+                    {products.length === 0 ? (
+                        <p className="text-muted-foreground text-center">No products found. Create your first product above!</p>
+                    ) : (
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {products.map((product) => (
+                                <ProductCard
+                                    key={product.id}
+                                    product={product}
+                                    isEditing={editingId === product.id}
+                                    onEdit={startEdit}
+                                    onCancel={cancelEdit}
+                                    onUpdate={handleUpdateSubmit}
+                                    onDelete={handleDelete}
+                                    isUpdating={updateProduct.isPending && editingId === product.id}
+                                    isDeleting={deleteProduct.isPending}
+                                    updateError={updateProduct.error}
+                                    deleteError={deleteProduct.error}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+ 
+interface ProductCardProps {
+    product: ProductReadable;
+    isEditing: boolean;
+    onEdit: (id: string) => void;
+    onCancel: () => void;
+    onUpdate: (id: string, data: UpdateProductRequest) => void;
+    onDelete: (id: string) => void;
+    isUpdating: boolean;
+    isDeleting: boolean;
+    updateError: Error | null;
+    deleteError: Error | null;
+}
+ 
+const ProductCard = ({ 
+    product, 
+    isEditing, 
+    onEdit, 
+    onCancel, 
+    onUpdate, 
+    onDelete,
+    isUpdating,
+    isDeleting,
+    updateError,
+    deleteError
+}: ProductCardProps) => {
+    const editForm = useForm<UpdateProductRequest>({
+        resolver: zodResolver(zUpdateProductRequest),
+        defaultValues: {
+            name: product.name || "",
+        },
+        mode: "onChange", // Enable real-time validation
+    });
+ 
+    const handleEditSubmit = (data: UpdateProductRequest) => {
+        onUpdate(product.id, data);
+    };
+ 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            onCancel();
+        }
+    };
+ 
+    if (isEditing) {
+        return (
+            <div className="border border-border rounded-lg p-4 bg-card">
+                <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-3">
+                    <div>
+                        <label className="block text-sm font-medium text-card-foreground mb-1">
+                            Product Name <span className="text-destructive">*</span>
+                        </label>
+                        <input
+                            {...editForm.register("name")}
+                            className={`w-full px-3 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors duration-200 ${
+                                editForm.formState.errors.name 
+                                    ? "border-destructive focus:ring-destructive" 
+                                    : "border-input"
+                            }`}
+                            placeholder="Enter product name (2-100 characters)"
+                            onKeyDown={handleKeyDown}
+                            autoFocus
+                        />
+                        {editForm.formState.errors.name && (
+                            <p className="text-destructive text-xs mt-1 flex items-center">
+                                <span className="mr-1">⚠️</span>
+                                {editForm.formState.errors.name.message}
+                            </p>
+                        )}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                        <button
+                            type="submit"
+                            disabled={isUpdating || !editForm.formState.isValid}
+                            className="flex-1 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                        >
+                            {isUpdating ? "Saving..." : "Save"}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onCancel}
+                            disabled={isUpdating}
+                            className="flex-1 px-3 py-1.5 text-sm bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 disabled:opacity-50 transition-colors duration-200"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                    
+                    {updateError && (
+                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-2">
+                            <p className="text-destructive text-xs font-medium flex items-center">
+                                <span className="mr-1">❌</span>
+                                Error updating product: {updateError.message}
+                            </p>
+                        </div>
+                    )}
+                </form>
+                
+                <p className="text-xs text-muted-foreground mt-2">ID: {product.id}</p>
+            </div>
+        );
+    }
+ 
+    return (
+        <div className="border border-border rounded-lg p-4 bg-card hover:shadow-md transition-shadow duration-200 group">
+            <div className="flex justify-between items-start">
+                <div className="flex-1">
+                    <h3 className="font-medium text-card-foreground">{product.name}</h3>
+                    <p className="text-sm text-muted-foreground">ID: {product.id}</p>
+                </div>
+                <div className="flex gap-1">
+                    <button
+                        onClick={() => onEdit(product.id)}
+                        disabled={isDeleting}
+                        className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50 transition-all duration-200"
+                    >
+                        Edit
+                    </button>
+                    <button
+                        onClick={() => onDelete(product.id)}
+                        disabled={isDeleting || isUpdating}
+                        className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs bg-destructive text-destructive-foreground rounded hover:bg-destructive/80 disabled:opacity-50 transition-all duration-200"
+                    >
+                        {isDeleting ? "Deleting..." : "Delete"}
+                    </button>
+                </div>
+            </div>
+            
+            {deleteError && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-2 mt-2">
+                    <p className="text-destructive text-xs">
+                        Error deleting product: {deleteError.message}
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+};
+ 
+export default ProductsPage;
+```
+
+### Understanding the Enhanced Validation Experience
+
+Let's examine the improvements we made to our forms:
+
+- **Real-time Validation**: By setting `mode: "onChange"`, react-hook-form validates fields as the user types, providing immediate feedback.
+- **Visual Validation States**: Form inputs change appearance (red border) when validation fails, giving clear visual cues.
+- **Helpful Placeholders**: Input placeholders now include validation hints (e.g., "2-100 characters").
+- **Required Field Indicators**: Asterisks (*) mark required fields, making expectations clear.
+- **Button State Management**: Submit buttons are disabled when forms are invalid, preventing invalid submissions.
+- **Enhanced Error Messages**: Error messages include icons and are formatted for better visibility.
+- **Helper Text**: Additional guidance appears below form fields to help users understand requirements.
+
+### Testing the Complete Validation Flow
+
+Now let's test our complete validation system to see how it works in practice:
+
+1. **Navigate to** http://localhost:5173
+2. **Test Client-Side Validation**:
+   - Try typing a single character in the product name field
+   - Notice the real-time validation error appears immediately
+   - Notice the "Create Product" button is disabled while the form is invalid
+   - Clear the field completely and see the "required" validation error
+
+3. **Test Valid Input**:
+   - Type a product name between 2-100 characters
+   - Notice the validation error disappears and the submit button becomes enabled
+   - Submit the form successfully
+
+4. **Test Edge Cases**:
+   - Try entering exactly 2 characters - should be valid
+   - Try entering a very long name (over 100 characters) - should show validation error
+   - Test the same validations in the edit form by editing an existing product
+
+### Understanding the Full Validation Pipeline
+
+Here's what happens when you submit a form with validation:
+
+1. **Client-Side Validation**: Zod validates the form data against the generated schema before the request is sent
+2. **Type Safety**: TypeScript ensures the request matches the expected interface
+3. **Server-Side Validation**: ASP.NET Core validates the request again using Data Annotations
+4. **Database Constraints**: Entity Framework applies any database-level constraints
+5. **Error Handling**: Any validation errors are properly formatted and returned to the frontend
+6. **User Feedback**: React Hook Form displays the appropriate error messages to the user
+
+This multi-layered approach ensures data integrity while providing excellent user experience.
+
+In the next section, we'll explore pagination and advanced server state management features to handle larger datasets efficiently.
+
+## 13. Adding Pagination
+
+As your Store application grows and you have a lot products, loading all products at once becomes inefficient and provides a poor user experience. This is where pagination comes in, the practice of breaking large datasets into smaller, manageable chunks that can be loaded on demand.
+
+Zest provides powerful pagination capabilities out of the box with automatic detection, optimized caching, and seamless integration with TanStack Query's infinite query features.
+
+### Understanding Zest's Pagination Detection
+
+Zest automatically detects pagination in your API endpoints by looking for specific keywords in your controller method parameters or request bodies. By default, Zest recognizes these pagination keywords:
+
+- **`page`** - For page-based pagination (e.g., page 1, page 2, etc.)
+- **`offset`** - For offset-based pagination (e.g., skip 20 items)
+- **`cursor`** - For cursor-based pagination (using unique identifiers)
+- **`after`** / **`before`** - For cursor pagination with directional navigation
+- **`start`** - For position-based pagination
+
+When Zest detects these keywords in your API endpoints, it automatically generates specialized TanStack Query hooks that provide powerful pagination features like infinite scrolling, optimized caching, and background data fetching.
+
+### Implementing Page-Based Pagination
+
+Let's start by implementing the most common pagination pattern: page-based pagination. This approach divides data into fixed-size pages that users can navigate through using page numbers.
+
+### Adding Pagination to the Backend
+
+First, let's update our `ProductsController` to support pagination. We'll add a `page` parameter and a `pageSize` parameter to control how many products are returned per page.
+
+Update your `backend/Controllers/ProductsController.cs`:
+
+```csharp filename="backend/Controllers/ProductsController.cs"
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Store.Entities;
+using System.ComponentModel.DataAnnotations;
+
+namespace Store.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class ProductsController(ApplicationDbContext context) : ControllerBase
+{
+    [HttpGet(Name = "GetProducts")]
+    public async Task<ProductsPagedResponse> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        // Ensure page is at least 1
+        page = Math.Max(1, page);
+        
+        // Limit page size to prevent abuse
+        pageSize = Math.Min(Math.Max(1, pageSize), 100);
+        
+        // Calculate offset for pagination
+        var offset = (page - 1) * pageSize;
+        
+        // Get total count for pagination metadata
+        var totalCount = await context.Products.CountAsync();
+        
+        // Get paginated products
+        var products = await context.Products
+            .OrderBy(p => p.Name) // Ensure consistent ordering
+            .Skip(offset)
+            .Take(pageSize)
+            .ToListAsync();
+        
+        // Calculate pagination metadata
+        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+        var hasNextPage = page < totalPages;
+        var hasPreviousPage = page > 1;
+        
+        return new ProductsPagedResponse
+        {
+            Data = products,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = totalPages,
+            HasNextPage = hasNextPage,
+            HasPreviousPage = hasPreviousPage
+        };
+    }
+
+    [HttpPost(Name = "CreateProduct")]
+    public async Task<ActionResult<Product>> Post([FromBody] CreateProductRequest request)
+    {
+        var product = new Product { Name = request.Name };
+        
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+        
+        return CreatedAtAction(nameof(Get), new { id = product.Id }, product);
+    }
+
+    [HttpPut("{id}", Name = "UpdateProduct")]
+    public async Task<ActionResult<Product>> Put(Guid id, [FromBody] UpdateProductRequest request)
+    {
+        var product = await context.Products.FindAsync(id);
+        
+        if (product == null)
+        {
+            return NotFound();
+        }
+        
+        product.Name = request.Name;
+        await context.SaveChangesAsync();
+        
+        return product;
+    }
+
+    [HttpDelete("{id}", Name = "DeleteProduct")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var product = await context.Products.FindAsync(id);
+        
+        if (product == null)
+        {
+            return NotFound();
+        }
+        
+        context.Products.Remove(product);
+        await context.SaveChangesAsync();
+        
+        return NoContent();
+    }
+}
+
+public record ProductsPagedResponse
+{
+    public required List<Product> Data { get; set; }
+    public required int Page { get; set; }
+    public required int PageSize { get; set; }
+    public required int TotalCount { get; set; }
+    public required int TotalPages { get; set; }
+    public required bool HasNextPage { get; set; }
+    public required bool HasPreviousPage { get; set; }
+}
+
+public record CreateProductRequest
+{
+    [Required(ErrorMessage = "Product name is required")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "Product name must be between 2 and 100 characters")]
+    public required string Name { get; set; }
+}
+
+public record UpdateProductRequest
+{
+    [Required(ErrorMessage = "Product name is required")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "Product name must be between 2 and 100 characters")]
+    public required string Name { get; set; }
+}
+```
+
+### Understanding the Pagination Implementation
+
+Let's break down what we added:
+
+- **`page` Parameter**: Controls which page of results to return (starting from 1).
+- **`pageSize` Parameter**: Controls how many items per page (with sensible limits).
+- **Offset Calculation**: Converts page numbers to database skip values: `(page - 1) * pageSize`.
+- **Total Count**: We count all products to calculate pagination metadata.
+- **Consistent Ordering**: `OrderBy(p => p.Name)` ensures results are always in the same order.
+- **Pagination Metadata**: The response includes helpful information like total pages, whether there are more pages, etc.
+- **Input Sanitization**: We ensure `page` is at least 1 and `pageSize` is within a reasonable range to prevent abuse.
+
+### Advanced Frontend Pagination with TanStack Query
+
+Now let's update our frontend to use Zest's automatically generated pagination features. TanStack Query provides powerful pagination patterns that work seamlessly with our paginated API.
+
+```tsx filename="frontend/src/components/ProductsPage.tsx"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { getProductsOptions, createProductMutation, updateProductMutation, deleteProductMutation, getProductsQueryKey } from "../generated/client/@tanstack/react-query.gen";
+import { zCreateProductRequest, zUpdateProductRequest } from "../generated/client/zod.gen";
+import { CreateProductRequest, UpdateProductRequest, ProductReadable } from "../generated/client";
+ 
+const ProductsPage = () => {
+    const queryClient = useQueryClient();
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(6);
+    
+    const { 
+        data: response, 
+        isLoading, 
+        error,
+        isError 
+    } = useQuery(getProductsOptions({
+        query: {
+            page: currentPage,
+            pageSize: pageSize
+        }
+    }));
+    
+    // Extract products and pagination metadata from response
+    const products = response?.data || [];
+    const totalPages = response?.totalPages || 0;
+    const totalCount = response?.totalCount || 0;
+    const hasNextPage = response?.hasNextPage || false;
+    const hasPreviousPage = response?.hasPreviousPage || false;
+ 
+    const createProduct = useMutation({
+        ...createProductMutation(),
+        onSuccess: () => {
+            // Invalidate all pages to ensure consistency
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+            // Reset form
+            form.reset();
+            // Go to first page to see the new product
+            setCurrentPage(1);
+        },
+    });
+ 
+    const updateProduct = useMutation({
+        ...updateProductMutation(),
+        onSuccess: () => {
+            // Invalidate current page and adjacent pages
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+            // Exit edit mode
+            setEditingId(null);
+        },
+    });
+ 
+    const deleteProduct = useMutation({
+        ...deleteProductMutation(),
+        onSuccess: () => {
+            // Invalidate all pages
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+            
+            // If we deleted the last item on a page and it's not the first page, go back one page
+            if (products.length === 1 && currentPage > 1) {
+                setCurrentPage(prev => prev - 1);
+            }
+        },
+    });
+ 
+    const form = useForm<CreateProductRequest>({
+        resolver: zodResolver(zCreateProductRequest),
+        defaultValues: {
+            name: "",
+        },
+        mode: "onChange",
+    });
+ 
+    const handleSubmit = (data: CreateProductRequest) => {
+        createProduct.mutate({
+            body: data,
+        });
+    };
+ 
+    const handleUpdateSubmit = (productId: string, data: UpdateProductRequest) => {
+        updateProduct.mutate({
+            path: { id: productId },
+            body: data,
+        });
+    };
+ 
+    const handleDelete = (productId: string) => {
+        if (window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+            deleteProduct.mutate({
+                path: { id: productId },
+            });
+        }
+    };
+ 
+    const startEdit = (productId: string) => {
+        setEditingId(productId);
+    };
+ 
+    const cancelEdit = () => {
+        setEditingId(null);
+    };
+    
+    const goToPage = (page: number) => {
+        setCurrentPage(page);
+        setEditingId(null); // Clear any edit state when changing pages
+    };
+    
+    const handlePageSizeChange = (newPageSize: number) => {
+        setPageSize(newPageSize);
+        setCurrentPage(1); // Reset to first page when changing page size
+        setEditingId(null);
+    };
+ 
+    if (isLoading) {
+        return (
+            <div className="w-full max-w-6xl mx-auto p-6">
+                <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-2 text-muted-foreground">Loading products...</p>
+                </div>
+            </div>
+        );
+    }
+ 
+    if (isError) {
+        return (
+            <div className="w-full max-w-6xl mx-auto p-6">
+                <div className="text-center py-8">
+                    <p className="text-destructive">Error loading products: {error?.message || "Unknown error"}</p>
+                    <button 
+                        onClick={() => window.location.reload()}
+                        className="mt-4 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors duration-200"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
+ 
+    return (
+        <div className="w-full max-w-6xl mx-auto space-y-8 p-6">
+            {/* Product Creation Form */}
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+                <h2 className="text-xl font-semibold mb-4 text-card-foreground">Add New Product</h2>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-card-foreground mb-1">
+                            Product Name <span className="text-destructive">*</span>
+                        </label>
+                        <input
+                            id="name"
+                            type="text"
+                            {...form.register("name")}
+                            className={`w-full px-3 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors duration-200 ${
+                                form.formState.errors.name 
+                                    ? "border-destructive focus:ring-destructive" 
+                                    : "border-input"
+                            }`}
+                            placeholder="Enter product name (2-100 characters)"
+                        />
+                        {form.formState.errors.name && (
+                            <p className="text-destructive text-sm mt-1 flex items-center">
+                                <span className="mr-1">⚠️</span>
+                                {form.formState.errors.name.message}
+                            </p>
+                        )}
+                    </div>
+                    
+                    <button
+                        type="submit"
+                        disabled={createProduct.isPending || !form.formState.isValid}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    >
+                        {createProduct.isPending ? "Creating..." : "Create Product"}
+                    </button>
+                    
+                    {createProduct.error && (
+                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                            <p className="text-destructive text-sm font-medium flex items-center">
+                                <span className="mr-1">❌</span>
+                                Error creating product
+                            </p>
+                            <p className="text-destructive text-xs mt-1">
+                                {createProduct.error.message}
+                            </p>
+                        </div>
+                    )}
+                </form>
+            </div>
+
+            {/* Products List */}
+            <div className="bg-card border border-border rounded-lg shadow-sm">
+                <div className="px-6 py-4 border-b border-border flex justify-between items-center">
+                    <div>
+                        <h2 className="text-xl font-semibold text-card-foreground">Product List</h2>
+                        <p className="text-sm text-muted-foreground">
+                            Showing {products.length} of {totalCount} products
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <label htmlFor="pageSize" className="text-sm font-medium text-card-foreground">
+                                Per page:
+                            </label>
+                            <select
+                                id="pageSize"
+                                value={pageSize}
+                                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                                className="px-2 py-1 border border-input rounded bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                                <option value={3}>3</option>
+                                <option value={6}>6</option>
+                                <option value={12}>12</option>
+                                <option value={24}>24</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div className="p-6">
+                    {products.length === 0 ? (
+                        <p className="text-muted-foreground text-center">No products found. Create your first product above!</p>
+                    ) : (
+                        <>
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                {products.map((product) => (
+                                    <ProductCard
+                                        key={product.id}
+                                        product={product}
+                                        isEditing={editingId === product.id}
+                                        onEdit={startEdit}
+                                        onCancel={cancelEdit}
+                                        onUpdate={handleUpdateSubmit}
+                                        onDelete={handleDelete}
+                                        isUpdating={updateProduct.isPending && editingId === product.id}
+                                        isDeleting={deleteProduct.isPending}
+                                        updateError={updateProduct.error}
+                                        deleteError={deleteProduct.error}
+                                    />
+                                ))}
+                            </div>
+                            
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="mt-8 flex items-center justify-between">
+                                    <div className="text-sm text-muted-foreground">
+                                        Page {currentPage} of {totalPages}
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => goToPage(1)}
+                                            disabled={!hasPreviousPage}
+                                            className="px-3 py-1 text-sm border border-input rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            First
+                                        </button>
+                                        
+                                        <button
+                                            onClick={() => goToPage(currentPage - 1)}
+                                            disabled={!hasPreviousPage}
+                                            className="px-3 py-1 text-sm border border-input rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            Previous
+                                        </button>
+                                        
+                                        {/* Page number buttons */}
+                                        <div className="flex gap-1">
+                                            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                                                let pageNum;
+                                                if (totalPages <= 5) {
+                                                    pageNum = i + 1;
+                                                } else if (currentPage <= 3) {
+                                                    pageNum = i + 1;
+                                                } else if (currentPage >= totalPages - 2) {
+                                                    pageNum = totalPages - 4 + i;
+                                                } else {
+                                                    pageNum = currentPage - 2 + i;
+                                                }
+                                                
+                                                return (
+                                                    <button
+                                                        key={pageNum}
+                                                        onClick={() => goToPage(pageNum)}
+                                                        className={`px-3 py-1 text-sm border rounded transition-colors ${
+                                                            currentPage === pageNum
+                                                                ? "bg-primary text-primary-foreground border-primary"
+                                                                : "border-input hover:bg-accent hover:text-accent-foreground"
+                                                        }`}
+                                                    >
+                                                        {pageNum}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        
+                                        <button
+                                            onClick={() => goToPage(currentPage + 1)}
+                                            disabled={!hasNextPage}
+                                            className="px-3 py-1 text-sm border border-input rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            Next
+                                        </button>
+                                        
+                                        <button
+                                            onClick={() => goToPage(totalPages)}
+                                            disabled={!hasNextPage}
+                                            className="px-3 py-1 text-sm border border-input rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            Last
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+ 
+interface ProductCardProps {
+    product: ProductReadable;
+    isEditing: boolean;
+    onEdit: (id: string) => void;
+    onCancel: () => void;
+    onUpdate: (id: string, data: UpdateProductRequest) => void;
+    onDelete: (id: string) => void;
+    isUpdating: boolean;
+    isDeleting: boolean;
+    updateError: Error | null;
+    deleteError: Error | null;
+}
+ 
+const ProductCard = ({ 
+    product, 
+    isEditing, 
+    onEdit, 
+    onCancel, 
+    onUpdate, 
+    onDelete,
+    isUpdating,
+    isDeleting,
+    updateError,
+    deleteError
+}: ProductCardProps) => {
+    const editForm = useForm<UpdateProductRequest>({
+        resolver: zodResolver(zUpdateProductRequest),
+        defaultValues: {
+            name: product.name || "",
+        },
+        mode: "onChange",
+    });
+ 
+    const handleEditSubmit = (data: UpdateProductRequest) => {
+        onUpdate(product.id, data);
+    };
+ 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            onCancel();
+        }
+    };
+ 
+    if (isEditing) {
+        return (
+            <div className="border border-border rounded-lg p-4 bg-card">
+                <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-3">
+                    <div>
+                        <label className="block text-sm font-medium text-card-foreground mb-1">
+                            Product Name <span className="text-destructive">*</span>
+                        </label>
+                        <input
+                            {...editForm.register("name")}
+                            className={`w-full px-3 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors duration-200 ${
+                                editForm.formState.errors.name 
+                                    ? "border-destructive focus:ring-destructive" 
+                                    : "border-input"
+                            }`}
+                            placeholder="Enter product name (2-100 characters)"
+                            onKeyDown={handleKeyDown}
+                            autoFocus
+                        />
+                        {editForm.formState.errors.name && (
+                            <p className="text-destructive text-xs mt-1 flex items-center">
+                                <span className="mr-1">⚠️</span>
+                                {editForm.formState.errors.name.message}
+                            </p>
+                        )}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                        <button
+                            type="submit"
+                            disabled={isUpdating || !editForm.formState.isValid}
+                            className="flex-1 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                        >
+                            {isUpdating ? "Saving..." : "Save"}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onCancel}
+                            disabled={isUpdating}
+                            className="flex-1 px-3 py-1.5 text-sm bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 disabled:opacity-50 transition-colors duration-200"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                    
+                    {updateError && (
+                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-2">
+                            <p className="text-destructive text-xs font-medium flex items-center">
+                                <span className="mr-1">❌</span>
+                                Error updating product: {updateError.message}
+                            </p>
+                        </div>
+                    )}
+                </form>
+                
+                <p className="text-xs text-muted-foreground mt-2">ID: {product.id}</p>
+            </div>
+        );
+    }
+ 
+    return (
+        <div className="border border-border rounded-lg p-4 bg-card hover:shadow-md transition-shadow duration-200 group">
+            <div className="flex justify-between items-start">
+                <div className="flex-1">
+                    <h3 className="font-medium text-card-foreground">{product.name}</h3>
+                    <p className="text-sm text-muted-foreground">ID: {product.id}</p>
+                </div>
+                <div className="flex gap-1">
+                    <button
+                        onClick={() => onEdit(product.id)}
+                        disabled={isDeleting}
+                        className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50 transition-all duration-200"
+                    >
+                        Edit
+                    </button>
+                    <button
+                        onClick={() => onDelete(product.id)}
+                        disabled={isDeleting || isUpdating}
+                        className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs bg-destructive text-destructive-foreground rounded hover:bg-destructive/80 disabled:opacity-50 transition-all duration-200"
+                    >
+                        {isDeleting ? "Deleting..." : "Delete"}
+                    </button>
+                </div>
+            </div>
+            
+            {deleteError && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-2 mt-2">
+                    <p className="text-destructive text-xs">
+                        Error deleting product: {deleteError.message}
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+};
+ 
+export default ProductsPage;
+```
+
+### Understanding the Pagination Features
+
+Let's examine the pagination features we've implemented:
+
+- **Automatic Page Management**: TanStack Query caches each page separately, providing instant navigation between visited pages.
+- **Smart Cache Invalidation**: When creating, updating, or deleting products, we invalidate the appropriate pages to maintain data consistency.
+- **Page Size Control**: Users can choose how many items to display per page, with the interface automatically adjusting.
+- **Intelligent Page Navigation**: When deleting the last item on a page, we automatically navigate back to the previous page.
+- **Comprehensive Pagination UI**: First/Previous/Next/Last buttons with numbered page indicators for easy navigation.
+- **Loading States**: The UI shows loading indicators while fetching new pages.
+
+### Testing the Pagination System
+
+Let's test our pagination system to see how it handles various scenarios:
+
+1. **Create Multiple Products**: Add more than 6 products to see pagination in action
+2. **Navigate Between Pages**: Click the page number buttons and observe instant navigation for cached pages
+3. **Change Page Size**: Try different page sizes (3, 6, 12, 24) and see how the pagination adapts
+4. **Delete Items**: Delete products from different pages and watch the pagination adjust automatically
+5. **Edit Across Pages**: Edit products on different pages to see how cache invalidation worksks
+
+## 14. Adding Authentication & Authorization
+
+Modern web applications require robust authentication and authorization systems to protect user data and control access to different features. Zest provides a complete authentication solution out of the box, including user registration, login, JWT token management, and protected routes.
+
+In this section, we'll add authentication to our Store application, ensuring that only authenticated users can view and manage products.
+
+<Callout>This is all automatically created when using the Auth flag in the Create Zest CLI.</Callout>
+
+### Understanding Zest Authentication
+
+Zest's authentication system provides several key features:
+
+- **Built-in User Management**: Complete user registration and login system
+- **Protected Endpoints**: Automatic authorization for your API controllers
+- **Frontend Auth Context**: React context for managing authentication state
+- **Automatic Token Refresh**: Seamless token renewal to keep users logged in
+
+### Updating ApplicationDbContext
+
+First, we need to update our database context to inherit from `ZestAuthDbContext` instead of the regular `DbContext`. This adds the necessary user tables and authentication infrastructure.
+
+Update your `backend/ApplicationDbContext.cs`:
+
+```csharp filename="backend/ApplicationDbContext.cs"
+using Microsoft.EntityFrameworkCore;
+using Store.Entities;
+using Zest;
+
+namespace Store;
+
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : ZestAuthDbContext<ApplicationDbContext>(options)
+{
+    public DbSet<Product> Products { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        builder.Entity<Product>().HasKey(e => e.Id);
+
+        base.OnModelCreating(builder);
+    }
+}
+```
+
+The important change is inheriting from `ZestAuthDbContext<ApplicationDbContext>` instead of `DbContext`. This provides:
+- User account tables (Users, Roles, Claims, etc.)
+- Authentication-related database configurations
+- Built-in user management functionality
+
+Next, we need to update our backend to use Zest's authentication features. This involves updating our `Program.cs` file and database context.
+
+### Updating Program.cs
+
+Let's update our `Program.cs` file to enable Zest authentication:
+
+```csharp filename="backend/Program.cs"
+using Store;
+using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using Zest;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddZestWithAuth<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name!)));
+
+var app = builder.Build();
+
+app.UseZestWithAuth();
+
+app.Run();
+```
+
+The key changes are:
+- **`AddZestWithAuth<ApplicationDbContext>`**: Configures Zest with authentication using your database context
+- **`UseZestWithAuth()`**: Enables authentication middleware in the request pipeline
+
+### Running Migrations
+Now we need to create and apply the migrations to set up the authentication tables in our database. Make sure you're in the `backend` directory and run the following commands in your terminal:
+
+```bash
+$ dotnet ef migrations add InitialAuthMigration
+$ dotnet ef database update
+```
+
+### Protecting Your API Endpoints
+
+Now we need to protect our ProductsController so that only authenticated users can access it. Add the `[Authorize]` attribute to your controller:
+
+```csharp filename="backend/Controllers/ProductsController.cs"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Store.Entities;
+using System.ComponentModel.DataAnnotations;
+
+namespace Store.Controllers;
+
+[Authorize] // This line protects all endpoints in this controller
+[ApiController]
+[Route("[controller]")]
+public class ProductsController(ApplicationDbContext context) : ControllerBase
+{
+    // ...existing code...
+}
+```
+
+The `[Authorize]` attribute ensures that:
+- All endpoints in this controller require authentication
+- Unauthenticated requests will receive a 401 Unauthorized response
+- JWT tokens are automatically validated for each request
+
+### Adding Frontend Authentication
+
+Now let's add authentication to our React frontend. We'll create login and registration forms, an authentication context, and protect our routes. Zest provides a complete authentication solution that automatically handles JWT tokens, user state management, and protected routes.
+
+Let's create our authentication setup. Create a new directory called `auth` in your `frontend/src` folder and add a new file called `Auth.ts`:
+
+```typescript filename="frontend/src/auth/Auth.ts"
+import { StoreVersion1000CultureNeutralPublicKeyTokenNull as AuthService } from "../generated/client";
+import { configureAuth } from "@ludovikallen/zest/AuthContext.tsx";
+
+const auth = configureAuth(AuthService);
+
+export const useAuth = auth.useAuth;
+export const AuthProvider = auth.AuthProvider;
+```
+
+This file sets up the authentication context using Zest's built-in configuration. The `configureAuth` function takes your auto-generated API client and provides:
+
+- **`useAuth` hook**: For accessing authentication state and methods in components
+- **`AuthProvider` component**: Context provider that manages authentication state across your app
+
+### Creating the Login Component
+
+Now let's create a login form. Create a new file called `Login.tsx` in the `frontend/src/auth` directory:
+
+```tsx filename="frontend/src/auth/Login.tsx"
+import { useState } from "react";
+import { useAuth } from "./Auth.ts";
+ 
+type LoginProps = {
+  onClose: () => void;
+};
+
+const Login = ({ onClose }: LoginProps) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
+ 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+ 
+    try {
+      const response = await login(email, password);
+      if (response.error) {
+        setError("Invalid email or password. Please try again.");
+      } else {
+        onClose();
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+ 
+  return (
+    <div className="w-full max-w-sm mx-auto">
+      <div className="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
+        <div className="flex flex-col space-y-2 text-center mb-6">
+          <h2 className="text-2xl font-semibold tracking-tight">Welcome back</h2>
+          <p className="text-sm text-muted-foreground">
+            Enter your email to sign in to your account
+          </p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium leading-none">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="name@example.com"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-medium leading-none">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Enter your password"
+            />
+          </div>
+          {error && (
+            <div className="text-sm font-medium text-destructive text-center">
+              {error}
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
+          >
+            {isSubmitting ? "Signing in..." : "Sign In"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+ 
+export default Login;
+```
+
+### Creating the Registration Component
+
+Next, let's create a registration form. Create a new file called `Register.tsx` in the `frontend/src/auth` directory:
+
+```tsx filename="frontend/src/auth/Register.tsx"
+import { useState } from "react";
+import { useAuth } from "./Auth.ts";
+
+type RegisterProps = {
+  onClose: () => void;
+};
+
+const Register = ({ onClose }: RegisterProps) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { register, login } = useAuth();
+ 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+ 
+    try {
+      const response = await register(email, password);
+      if (response.error) {
+        setError("Registration failed. Please verify your details and try again.");
+      } else {
+        await login(email, password);
+        onClose();
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+ 
+  return (
+    <div className="w-full max-w-sm mx-auto">
+      <div className="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
+        <div className="flex flex-col space-y-2 text-center mb-6">
+          <h2 className="text-2xl font-semibold tracking-tight">Create an account</h2>
+          <p className="text-sm text-muted-foreground">
+            Enter your email below to create your account
+          </p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium leading-none">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="name@example.com"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-medium leading-none">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="new-password"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Create a password"
+            />
+          </div>
+          {error && (
+            <div className="text-sm font-medium text-destructive text-center">
+              {error}
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
+          >
+            {isSubmitting ? "Creating account..." : "Create account"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+ 
+export default Register;
+```
+
+### Creating the Authentication Container
+
+Now let's create a component that manages switching between login and registration. Create a new file called `AuthContainer.tsx` in the `frontend/src/auth` directory:
+
+```tsx filename="frontend/src/auth/AuthContainer.tsx"
+import { useState } from "react";
+import Login from "./Login";
+import Register from "./Register";
+ 
+type ClosableCardProps = {
+  children: React.ReactNode;
+  onClose: () => void;
+};
+ 
+const ClosableCard = ({ children, onClose }: ClosableCardProps) => {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="relative bg-card text-card-foreground rounded-2xl shadow-2xl border w-full max-w-sm p-6">
+        <button
+          onClick={onClose}
+          className="absolute right-0 top-0 rounded-full p-2 hover:bg-muted/80 transition-all duration-200 text-muted-foreground hover:text-foreground flex items-center justify-center w-8 h-8"
+          aria-label="Close"
+        >
+          x
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+type AuthContainerProps = {
+  onClose: () => void;
+};
+ 
+const AuthContainer = ({ onClose }: AuthContainerProps) => {
+  const [view, setView] = useState<"login" | "register">("login");
+ 
+  return (
+    <ClosableCard onClose={onClose}>
+      {view === "login" ? <Login onClose={onClose} /> : <Register onClose={onClose} />}
+      <div className="text-center mt-4">
+        {view === "login" ? (
+          <p className="text-sm text-muted-foreground">
+            Don't have an account?{" "}
+            <button
+              className="font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"
+              onClick={() => setView("register")}
+              type="button"
+            >
+              Sign up
+            </button>
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <button
+              className="font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"
+              onClick={() => setView("login")}
+              type="button"
+            >
+              Sign in
+            </button>
+          </p>
+        )}
+      </div>
+    </ClosableCard>
+  );
+};
+ 
+export default AuthContainer;
+```
+
+### Integrating Authentication with Your App
+
+Now let's update your main `App.tsx` file to integrate authentication. The app should show the login/register forms when the user is not authenticated, and show the products page when they are authenticated.
+
+```tsx filename="frontend/src/App.tsx"
+import { useState } from 'react';
+import { AuthProvider, useAuth } from './auth/Auth';
+import { ThemeProvider } from './contexts/ThemeContext'
+import { ThemeToggle } from './components/ThemeToggle'
+import ProductsPage from './components/ProductsPage'
+import AuthContainer from './auth/AuthContainer';
+
+function Header() {
+  const { state, logout } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  return (
+    <header className="border-b border-border">
+      <div className="container mx-auto flex items-center justify-between p-4">
+        <h1 className="text-2xl font-bold text-foreground">Store</h1>
+        <div className="flex items-center gap-4">
+          <ThemeToggle />
+          {state.isAuthenticated ? (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+            >
+              Login
+            </button>
+          )}
+        </div>
+      </div>
+      {showAuthModal && (
+        <AuthContainer onClose={() => setShowAuthModal(false)} />
+      )}
+    </header>
+  );
+}
+ 
+function App() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <div className="min-h-screen bg-background">
+          <Header />
+          <main className="container mx-auto p-4">
+            <ProductsPage />
+          </main>
+        </div>
+      </AuthProvider>
+    </ThemeProvider>
+  )
+}
+ 
+export default App
+```
+
+### Allowing Unauthenticated Access
+
+In some cases, you may want to allow certain endpoints to be accessed without authentication. For example, you might want to allow users to browse products before they register or log in. This is a common pattern for e-commerce applications where product browsing should be public, but creating, editing, or deleting products requires authentication.
+
+Zest makes this easy with the `[AllowAnonymous]` attribute from ASP.NET Core. You can apply this attribute to specific controller actions to bypass the authentication requirement set by the `[Authorize]` attribute on the controller.
+
+Let's modify our `ProductsController` to allow unauthenticated users to view products while still requiring authentication for create, update, and delete operations.
+
+Update your `backend/Controllers/ProductsController.cs`:
+
+```csharp filename="backend/Controllers/ProductsController.cs"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Store.Entities;
+using System.ComponentModel.DataAnnotations;
+
+namespace Store.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("[controller]")]
+public class ProductsController(ApplicationDbContext context) : ControllerBase
+{
+    [AllowAnonymous] // This endpoint can be accessed without authentication
+    [HttpGet(Name = "GetProducts")]
+    public async Task<ProductsPagedResponse> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        // ...existing code...
+    }
+
+    // ...existing code...
+}
+
+// ...existing code...
+```
+
+### Enhanced Frontend Experience
+
+With this change, your React frontend can now display products to unauthenticated users while showing authentication-required features (like creating, editing, or deleting products) only to authenticated users.
+
+Update your `ProductsPage.tsx` to handle both authenticated and unauthenticated states gracefully:
+
+```tsx filename="frontend/src/components/ProductsPage.tsx"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useAuth } from "../auth/Auth";
+import { getProductsOptions, createProductMutation, updateProductMutation, deleteProductMutation, getProductsQueryKey } from "../generated/client/@tanstack/react-query.gen";
+import { zCreateProductRequest, zUpdateProductRequest } from "../generated/client/zod.gen";
+import { CreateProductRequest, UpdateProductRequest, ProductReadable } from "../generated/client";
+ 
+const ProductsPage = () => {
+    const { state } = useAuth(); // Get authentication state
+    const isAuthenticated = state.status === 'authenticated';
+    
+    const queryClient = useQueryClient();
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(6);
+    
+    // This query will work for both authenticated and unauthenticated users
+    const { 
+        data: response, 
+        isLoading, 
+        error,
+        isError 
+    } = useQuery(getProductsOptions({
+        query: {
+            page: currentPage,
+            pageSize: pageSize,
+        }
+    }));
+    
+    // Extract products and pagination metadata from response
+    const products = response?.data || [];
+    const totalPages = response?.totalPages || 0;
+    const totalCount = response?.totalCount || 0;
+    const hasNextPage = response?.hasNextPage || false;
+    const hasPreviousPage = response?.hasPreviousPage || false;
+ 
+    // These mutations are only available to authenticated users
+    const createProduct = useMutation({
+        ...createProductMutation(),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+            form.reset();
+            setCurrentPage(1);
+        },
+    });
+ 
+    const updateProduct = useMutation({
+        ...updateProductMutation(),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+            setEditingId(null);
+        },
+    });
+ 
+    const deleteProduct = useMutation({
+        ...deleteProductMutation(),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: getProductsQueryKey() });
+            
+            // If we deleted the last item on this page and it's not the first page, go back one page
+            if (products.length === 1 && currentPage > 1) {
+                setCurrentPage(currentPage - 1);
+            }
+        },
+    });
+ 
+    const form = useForm<CreateProductRequest>({
+        resolver: zodResolver(zCreateProductRequest),
+        defaultValues: {
+            name: "",
+        },
+        mode: "onChange",
+    });
+ 
+    const handleSubmit = (data: CreateProductRequest) => {
+        createProduct.mutate({
+            body: data,
+        });
+    };
+
+    const handleUpdateSubmit = (productId: string, data: UpdateProductRequest) => {
+        updateProduct.mutate({
+            path: { id: productId },
+            body: data,
+        });
+    };
+
+    const handleDelete = (productId: string) => {
+        if (window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+            deleteProduct.mutate({
+                path: { id: productId },
+            });
+        }
+    };
+
+    const startEdit = (productId: string) => {
+        setEditingId(productId);
+    };
+
+    const cancelEdit = () => {
+        setEditingId(null);
+    };
+    
+    const goToPage = (page: number) => {
+        setCurrentPage(page);
+        setEditingId(null); // Clear any edit state when changing pages
+    };
+    
+    const handlePageSizeChange = (newPageSize: number) => {
+        setPageSize(newPageSize);
+        setCurrentPage(1); // Reset to first page when changing page size
+        setEditingId(null);
+    };
+ 
+    if (isLoading) {
+        return (
+            <div className="w-full max-w-6xl mx-auto space-y-8 p-6">
+                <div className="flex items-center justify-center h-64">
+                    <div className="text-lg text-muted-foreground">Loading products...</div>
+                </div>
+            </div>
+        );
+    }
+ 
+    if (isError) {
+        return (
+            <div className="w-full max-w-6xl mx-auto space-y-8 p-6">
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6">
+                    <h2 className="text-lg font-semibold text-destructive mb-2">Error Loading Products</h2>
+                    <p className="text-destructive/80">
+                        {error?.message || 'Failed to load products. Please try again.'}
+                    </p>
+                </div>
+            </div>
+        );
+    }
+ 
+    return (
+        <div className="w-full max-w-6xl mx-auto space-y-8 p-6">
+            {/* Only show the create form to authenticated users */}
+            {isAuthenticated && (
+                <div className="bg-card border border-border rounded-lg shadow-sm">
+                    <div className="p-6 border-b border-border">
+                        <h2 className="text-xl font-semibold text-card-foreground">Add New Product</h2>
+                        <p className="text-sm text-muted-foreground mt-1">Create a new product for your store</p>
+                    </div>
+                    <div className="p-6">
+                        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                            <div className="space-y-2">
+                                <label htmlFor="name" className="text-sm font-medium text-foreground">
+                                    Product Name *
+                                </label>
+                                <input
+                                    id="name"
+                                    type="text"
+                                    placeholder="Enter product name (2-100 characters)"
+                                    className={`w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${
+                                        form.formState.errors.name ? 'border-destructive' : ''
+                                    }`}
+                                    {...form.register("name")}
+                                />
+                                {form.formState.errors.name && (
+                                    <p className="text-sm text-destructive flex items-center gap-1">
+                                        ⚠️ {form.formState.errors.name.message}
+                                    </p>
+                                )}
+                                <p className="text-xs text-muted-foreground">
+                                    Enter a name between 2 and 100 characters
+                                </p>
+                            </div>
+                            
+                            {createProduct.error && (
+                                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                                    <p className="text-destructive text-sm flex items-center gap-2">
+                                        ⚠️ Failed to create product: {createProduct.error.message}
+                                    </p>
+                                </div>
+                            )}
+                            
+                            <button
+                                type="submit"
+                                disabled={createProduct.isPending || !form.formState.isValid}
+                                className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
+                            >
+                                {createProduct.isPending ? 'Creating Product...' : 'Create Product'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+            
+            {/* Products list - visible to all users */}
+            <div className="bg-card border border-border rounded-lg shadow-sm">
+                <div className="p-6 border-b border-border">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h2 className="text-xl font-semibold text-card-foreground">Products</h2>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                {totalCount > 0 
+                                    ? `Showing ${products.length} of ${totalCount} products`
+                                    : 'No products found'
+                                }
+                            </p>
+                        </div>
+                        
+                        {/* Page size selector */}
+                        <div className="flex items-center gap-2">
+                            <label htmlFor="pageSize" className="text-sm text-muted-foreground">
+                                Items per page:
+                            </label>
+                            <select
+                                id="pageSize"
+                                value={pageSize}
+                                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                                className="border border-input bg-background px-2 py-1 rounded text-sm"
+                            >
+                                <option value={3}>3</option>
+                                <option value={6}>6</option>
+                                <option value={12}>12</option>
+                                <option value={24}>24</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="p-6">
+                    {products.length === 0 ? (
+                        <div className="text-center py-12">
+                            <div className="text-muted-foreground text-lg">No products found</div>
+                            {isAuthenticated && (
+                                <p className="text-sm text-muted-foreground mt-2">
+                                    Create your first product using the form above.
+                                </p>
+                            )}
+                        </div>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {products.map((product) => (
+                                    <ProductCard
+                                        key={product.id}
+                                        product={product}
+                                        isEditing={editingId === product.id}
+                                        onEdit={startEdit}
+                                        onCancel={cancelEdit}
+                                        onUpdate={handleUpdateSubmit}
+                                        onDelete={handleDelete}
+                                        isUpdating={updateProduct.isPending}
+                                        isDeleting={deleteProduct.isPending}
+                                        updateError={updateProduct.error}
+                                        deleteError={deleteProduct.error}
+                                        isAuthenticated={isAuthenticated} // Pass authentication state
+                                    />
+                                ))}
+                            </div>
+                            
+                            {/* Pagination controls - visible to all users */}
+                            {totalPages > 1 && (
+                                <div className="mt-8 flex items-center justify-center gap-2">
+                                    <button
+                                        onClick={() => goToPage(1)}
+                                        disabled={!hasPreviousPage}
+                                        className="px-3 py-2 border border-input bg-background rounded-md hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                    >
+                                        First
+                                    </button>
+                                    <button
+                                        onClick={() => goToPage(currentPage - 1)}
+                                        disabled={!hasPreviousPage}
+                                        className="px-3 py-2 border border-input bg-background rounded-md hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                    >
+                                        Previous
+                                    </button>
+                                    
+                                    {/* Page numbers */}
+                                    <div className="flex gap-1">
+                                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                            const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                                            if (pageNum <= totalPages) {
+                                                return (
+                                                    <button
+                                                        key={pageNum}
+                                                        onClick={() => goToPage(pageNum)}
+                                                        className={`w-10 h-10 rounded-md transition-colors duration-200 ${
+                                                            currentPage === pageNum
+                                                                ? 'bg-primary text-primary-foreground'
+                                                                : 'border border-input bg-background hover:bg-accent hover:text-accent-foreground'
+                                                        }`}
+                                                    >
+                                                        {pageNum}
+                                                    </button>
+                                                );
+                                            }
+                                            return null;
+                                        })}
+                                    </div>
+                                    
+                                    <button
+                                        onClick={() => goToPage(currentPage + 1)}
+                                        disabled={!hasNextPage}
+                                        className="px-3 py-2 border border-input bg-background rounded-md hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                    >
+                                        Next
+                                    </button>
+                                    <button
+                                        onClick={() => goToPage(totalPages)}
+                                        disabled={!hasNextPage}
+                                        className="px-3 py-2 border border-input bg-background rounded-md hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                    >
+                                        Last
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Update ProductCard to handle authentication state
+interface ProductCardProps {
+    product: ProductReadable;
+    isEditing: boolean;
+    onEdit: (id: string) => void;
+    onCancel: () => void;
+    onUpdate: (id: string, data: UpdateProductRequest) => void;
+    onDelete: (id: string) => void;
+    isUpdating: boolean;
+    isDeleting: boolean;
+    updateError: Error | null;
+    deleteError: Error | null;
+    isAuthenticated: boolean; // New prop
+}
+ 
+const ProductCard = ({ 
+    product, 
+    isEditing, 
+    onEdit, 
+    onCancel, 
+    onUpdate, 
+    onDelete,
+    isUpdating,
+    isDeleting,
+    updateError,
+    deleteError,
+    isAuthenticated // New prop
+}: ProductCardProps) => {
+    const editForm = useForm<UpdateProductRequest>({
+        resolver: zodResolver(zUpdateProductRequest),
+        defaultValues: {
+            name: product.name || "",
+        },
+        mode: "onChange",
+    });
+
+    const handleEditSubmit = (data: UpdateProductRequest) => {
+        onUpdate(product.id, data);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            onCancel();
+        }
+    };
+
+    if (isEditing) {
+        return (
+            <div className="border border-border rounded-lg p-4 bg-card">
+                <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-3">
+                    <div className="space-y-2">
+                        <label htmlFor={`edit-name-${product.id}`} className="text-sm font-medium text-foreground">
+                            Product Name *
+                        </label>
+                        <input
+                            id={`edit-name-${product.id}`}
+                            type="text"
+                            placeholder="Enter product name (2-100 characters)"
+                            className={`w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${
+                                editForm.formState.errors.name ? 'border-destructive' : ''
+                            }`}
+                            onKeyDown={handleKeyDown}
+                            {...editForm.register("name")}
+                        />
+                        {editForm.formState.errors.name && (
+                            <p className="text-sm text-destructive flex items-center gap-1">
+                                ⚠️ {editForm.formState.errors.name.message}
+                            </p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                            Press Escape to cancel • Enter a name between 2 and 100 characters
+                        </p>
+                    </div>
+                    
+                    {updateError && (
+                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-2">
+                            <p className="text-destructive text-xs flex items-center gap-1">
+                                ⚠️ Failed to update: {updateError.message}
+                            </p>
+                        </div>
+                    )}
+                    
+                    <div className="flex gap-2">
+                        <button
+                            type="submit"
+                            disabled={isUpdating || !editForm.formState.isValid}
+                            className="flex-1 px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors duration-200 text-sm font-medium"
+                        >
+                            {isUpdating ? 'Updating...' : 'Update Product'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onCancel}
+                            disabled={isUpdating}
+                            className="px-3 py-2 border border-input bg-background rounded-md hover:bg-accent hover:text-accent-foreground disabled:opacity-50 transition-colors duration-200 text-sm"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+                
+                <p className="text-xs text-muted-foreground mt-2">ID: {product.id}</p>
+            </div>
+        );
+    }
+ 
+    return (
+        <div className="border border-border rounded-lg p-4 bg-card hover:shadow-md transition-shadow duration-200 group">
+            <div className="flex justify-between items-start">
+                <div className="flex-1">
+                    <h3 className="font-medium text-card-foreground">{product.name}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Product ID: {product.id}
+                    </p>
+                </div>
+                
+                {/* Only show edit/delete buttons to authenticated users */}
+                {isAuthenticated && (
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button
+                            onClick={() => onEdit(product.id)}
+                            disabled={isUpdating || isDeleting}
+                            className="text-xs px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-colors duration-200 disabled:opacity-50"
+                        >
+                            Edit
+                        </button>
+                        <button
+                            onClick={() => onDelete(product.id)}
+                            disabled={isUpdating || isDeleting}
+                            className="text-xs px-2 py-1 bg-destructive text-destructive-foreground rounded hover:bg-destructive/80 transition-colors duration-200 disabled:opacity-50"
+                        >
+                            {isDeleting ? 'Deleting...' : 'Delete'}
+                        </button>
+                    </div>
+                )}
+            </div>
+            
+            {deleteError && (
+                <div className="mt-2 text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded p-2">
+                    ⚠️ {deleteError.message}
+                </div>
+            )}
+        </div>
+    );
+};
+ 
+export default ProductsPage;
+```
+
+### Testing the Mixed Authentication Flow
+
+Let's test how the application behaves with mixed authentication:
+
+1. **Start your application** and navigate to http://localhost:5173
+2. **Without logging in**:
+   - You should be able to see all products
+   - Navigation between pages should work
+   - Create, edit, and delete buttons should be hidden
+3. **Log in or register**:
+   - The create product form should appear
+   - Edit and delete buttons should become visible on product cards
+   - All functionality should work as before
+
+
+## 15. Continuous Integration with GitHub Actions
+Coming soon!
+
+## 16. Deploying to Production
+Coming soon!
+
+## 17. What's Next?
+
+Congratulations! You've built a complete full-stack application with Zest that includes CRUD operations, pagination, validation, and authentication. You now have a solid foundation to build upon.
+
+The Zest framework is designed to grow with your needs, from simple CRUD applications to complex enterprise systems. Take your time, experiment, and don't hesitate to refer back to this guide or reach out to me when you need help.
+
+Happy coding! 🚀
+
+---
+
+<Callout type="info">
+This tutorial is greatly inspired by the excellent [Getting Started with Rails guide](https://guides.rubyonrails.org/getting_started.html). I have adapted the structure and teaching approach to showcase Zest's capabilities while maintaining the same progressive, hands-on learning experience.
+</Callout>
