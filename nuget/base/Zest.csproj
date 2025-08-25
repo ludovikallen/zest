@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>LudovikAllen.Zest</PackageId>
-        <Version>0.0.8</Version>
+        <Version>0.0.9</Version>
         <Authors>Ludovik Allen</Authors>
         <DevelopmentDependency>true</DevelopmentDependency>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -26,11 +26,23 @@
             <PackagePath>config</PackagePath>
         </Content>
 
+        <Content Include="use-signalr-hub.ts">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Pack>true</Pack>
+            <PackagePath>signalr</PackagePath>
+        </Content>
+
         <Content Include="dotnet-swagger*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
             <PackagePath>tools</PackagePath>
         </Content>
+
+		<Content Include="dotnet-tsrts*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Pack>true</Pack>
+			<PackagePath>tools</PackagePath>
+		</Content>
     </ItemGroup>
 
     <ItemGroup>
@@ -45,6 +57,9 @@
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.5" />
         <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.14.8" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.2" />
+        <PackageReference Include="Tapper.Analyzer" Version="1.13.1" />
+        <PackageReference Include="TypedSignalR.Client.TypeScript.Analyzer" Version="1.15.0" />
+        <PackageReference Include="TypedSignalR.Client.TypeScript.Attributes" Version="1.15.0" />
         <PackageReference Include="Tenekon.MSBuild.Packaging.ProjectBuildInPackage" Version="2.0.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

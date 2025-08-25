@@ -1,0 +1,227 @@
+import { Callout } from 'nextra/components'
+import { Tabs } from 'nextra/components'
+
+# SignalR Type-Safe Hubs
+
+Zest provides seamless integration with SignalR, automatically generating type-safe TypeScript clients for your SignalR hubs. This enables real-time communication between your .NET backend and React frontend with full type safety and IntelliSense support.
+
+## Overview
+
+The SignalR integration in Zest leverages several powerful libraries:
+
+- **TypedSignalR.Client** for type-safe hub interfaces
+- **Tapper** for TypeScript code generation
+- **Microsoft.AspNetCore.SignalR** for real-time communication
+
+When you build your .NET project, Zest automatically generates TypeScript interfaces and a custom React hook for seamless SignalR integration in your frontend.
+
+## Backend Setup
+
+### 1. Enable SignalR Client Generation
+
+First, enable the SignalR client generator in your `.csproj` file:
+
+```xml {7}
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <FrontendSourcePath>$(MSBuildProjectDirectory)\..\frontend\src</FrontendSourcePath>
+    <EnableSignalRClientGenerator>true</EnableSignalRClientGenerator>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LudovikAllen.Zest" Version="0.0.9" />
+    <!-- Your other package references -->
+  </ItemGroup>
+</Project>
+```
+
+### 2. Create Your Hub Interfaces and Implementation
+
+Define your hub interfaces and implementation using the required attributes:
+
+```csharp
+using Microsoft.AspNetCore.SignalR;
+using Tapper;
+using TypedSignalR.Client;
+
+namespace YourNamespace;
+
+public class ChatHub : Hub<IChatReceiver>, IChatHub
+{
+    public async Task SendMessage(string message)
+    {
+        await this.Clients.Others.OnReceiveMessage(new Message(message, DateTime.Now));
+    }
+}
+
+[Hub]
+public interface IChatHub
+{
+    Task SendMessage(string message);
+}
+
+[Receiver]
+public interface IChatReceiver
+{
+    Task OnReceiveMessage(Message message);
+}
+
+[TranspilationSource]
+public record Message(string Content, DateTime TimeStamp);
+```
+
+<Callout type="info">
+**Key Attributes:**
+- `[Hub]` - Marks the interface that defines server methods callable from the client
+- `[Receiver]` - Marks the interface that defines client methods callable from the server
+- `[TranspilationSource]` - Marks types that should be transpiled to TypeScript
+</Callout>
+
+### 3. Configure SignalR in Program.cs
+
+Add SignalR services and configure your hub endpoint:
+
+```csharp {7, 11}
+using Microsoft.EntityFrameworkCore;
+using YourNamespace;
+using Zest;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSignalR();
+
+var app = builder.Build();
+
+app.MapHub<ChatHub>("/chathub");
+
+app.Run();
+```
+
+### 4. Build Your Project
+
+Build your .NET project to generate the TypeScript client code:
+
+<Tabs items={['Visual Studio', 'CLI']}>
+<Tabs.Tab>
+Press `Ctrl+Shift+B` or go to **Build** → **Build Solution**
+</Tabs.Tab>
+<Tabs.Tab>
+```bash
+dotnet build
+```
+</Tabs.Tab>
+</Tabs>
+
+## Frontend Usage
+
+After building your backend project, Zest automatically generates TypeScript interfaces and a React hook in your frontend's `src/generated/signalr/` directory.
+
+### 1. Generated TypeScript Types
+
+The build process generates type-safe interfaces based on your C# hub definitions:
+
+```typescript
+// Generated in src/generated/signalr/
+export type IChatHub = {
+    /**
+     * @param message Transpiled from string
+     * @returns Transpiled from System.Threading.Tasks.Task
+     */
+    sendMessage(message: string): Promise<void>;
+}
+
+export type IChatReceiver = {
+    /**
+     * @param message Transpiled from YourNamespace.Message
+     * @returns Transpiled from System.Threading.Tasks.Task
+     */
+    onReceiveMessage(message: Message): Promise<void>;
+}
+
+export type Message = {
+    content: string;
+    timeStamp: string;
+}
+```
+
+### 2. Using the Generated Hook
+
+Import and use the generated types and hook in your React components:
+
+```typescript {11-17, 20-28, 33}
+import React, { useState } from 'react';
+import { Message } from "../generated/signalr/YourNamespace";
+import { IChatReceiver } from "../generated/signalr/TypedSignalR.Client/YourNamespace";
+import { useSignalRHub } from "../generated/signalr/use-signalr-hub";
+
+export function ChatComponent() {
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [messageText, setMessageText] = useState('');
+
+    // Define the receiver implementation
+    const receiver: IChatReceiver = {
+        onReceiveMessage: (message: Message): Promise<void> => {
+            console.log(`Received message: ${message.content} at ${message.timeStamp}`);
+            setMessages(prev => [...prev, message]);
+            return Promise.resolve();
+        },
+    };
+
+    // Connect to the SignalR hub
+    const { hub, isConnected, isConnecting } = useSignalRHub(
+        "IChatHub", 
+        "IChatReceiver", 
+        receiver, 
+        {
+            baseUrl: import.meta.env.VITE_API_BASE_URL,
+            hubPath: '/chathub'
+        }
+    );
+
+    const sendMessage = async () => {
+        if (hub && messageText.trim()) {
+            // Call the sendMessage method with type safety on the hub
+            await hub.sendMessage(messageText);
+            setMessageText('');
+        }
+    };
+
+    return (
+        <div>
+            <div>
+                <p>Connection Status: {isConnecting ? 'Connecting...' : isConnected ? 'Connected' : 'Disconnected'}</p>
+            </div>
+            
+            <div>
+                <h3>Messages:</h3>
+                {messages.map((msg, index) => (
+                    <div key={index}>
+                        <strong>{new Date(msg.timeStamp).toLocaleTimeString()}:</strong> {msg.content}
+                    </div>
+                ))}
+            </div>
+
+            <div>
+                <input
+                    type="text"
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                    placeholder="Type a message..."
+                    disabled={!isConnected}
+                />
+                <button onClick={sendMessage} disabled={!isConnected || !messageText.trim()}>
+                    Send
+                </button>
+            </div>
+        </div>
+    );
+}
+```
+
+<Callout emoji="🔐" type="info">
+If the user is logged in to the app, the SignalR connection automatically inherits this authentication.
+</Callout>
