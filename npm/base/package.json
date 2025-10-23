@@ -1,6 +1,6 @@
 {
   "name": "@ludovikallen/zest",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
   "license": "MIT",
   "author": "Ludovik Allen",
@@ -10,7 +10,8 @@
     "zod": "^3.25.56",
     "@tanstack/react-query": "^5.81.5",
     "@hookform/resolvers": "^5.1.1",
-    "react-hook-form": "^7.60.0"
+    "react-hook-form": "^7.60.0",
+    "@microsoft/signalr": "^9.0.6"
   },
   "dependencies": {
     "react": "^19.1.0"

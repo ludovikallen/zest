@@ -24,6 +24,10 @@
             TaskName="ZestGenerator.OpenApiDocumentGenerator"
             AssemblyFile="$(ZestGeneratorAssembly)" />
 
+	<UsingTask
+            TaskName="ZestGenerator.SignalRClientGenerator"
+            AssemblyFile="$(ZestGeneratorAssembly)" />
+
     <Target Name="validateFrontendSourcePath" AfterTargets="Build">
         <Error Condition="'$(FrontendSourcePath)' == ''"
                Text="Zest: Error - FrontendSourcePath is not set. Please define the FrontendSourcePath property in your project file." />
@@ -55,14 +59,14 @@
         />
     </Target>
 
-    <Target Name="forceOpenApiReGenerationOnRebuild" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="CoreClean">
-        <Message Text="Zest: Cleaning previously generated OpenApi document..." Importance="high" />
-        <RemoveDir Directories="$(OpenApiOutputDirectory)"></RemoveDir>
-    </Target>
-
-    <Target Name="forceFolderReGenerationOnRebuild" Condition="'$(FrontendSourcePath)' != ''" AfterTargets="CoreClean">
-        <Message Text="Zest: Cleaning previously generated folder..." Importance="high" />
-        <RemoveDir Directories="$(TypeScriptClientOutputDirectory)"></RemoveDir>
+    <Target Name="generateSignalRClient" Condition="'$(FrontendSourcePath)' != '' And $(EnableSignalRClientGenerator) == 'true'" AfterTargets="generateTypeScriptClient">
+    	<Message Text="Zest: Generating SignalR client..." Importance="high" />
+    	<SignalRClientGenerator
+            TypeScriptClientOutputDirectory="$(TypeScriptClientOutputDirectory)"
+            BuildPath="$(MSBuildProjectDirectory)"
+            NugetPath="$(ZestNugetDirectory)"
+            ProjectName="$(MSBuildProjectName)"
+    />
     </Target>
 
 </Project>
